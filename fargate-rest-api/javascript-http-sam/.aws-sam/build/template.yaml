@@ -1,0 +1,654 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform:
+- AWS::Serverless-2016-10-31
+Description: 'Backend API with Lambda and DynamoDB, Lambda Authorizer
+
+  '
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    MemorySize: 128
+    Timeout: 100
+    Tracing: Active
+Parameters:
+  CognitoStackName:
+    Description: An environment name for Cognito stack
+    Type: String
+    Default: serverless-api-cognito
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName:
+        Fn::Sub: ${AWS::StackName}-ecs-cluster
+      Tags:
+        Stack:
+          Fn::Sub: ${AWS::StackName}
+  LocationsServiceTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      Memory: '0.5GB'
+      Cpu: 256
+      ExecutionRoleArn:
+        Ref: LocationsServiceExecutionRole
+      TaskRoleArn:
+        Ref: LocationsServiceTaskRole
+      ContainerDefinitions:
+      - Name: locations-service
+        Image: nginx:latest
+        PortMappings:
+        - ContainerPort: 80
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-group:
+              Ref: LocationsServiceLogGroup
+            awslogs-stream-prefix: ecs
+  LocationsServiceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  LocationsServiceTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+  LocationsServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/ecs/${LocationsServiceTaskDefinition}
+      RetentionInDays: 7
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/api/authorizer.handler
+      Description: Handler for Lambda authorizer
+      Environment:
+        Variables:
+          USER_POOL_ID:
+            Fn::ImportValue:
+              Fn::Sub: ${CognitoStackName}-UserPool
+          ADMIN_GROUP_NAME:
+            Fn::ImportValue:
+              Fn::Sub: ${CognitoStackName}-UserPoolAdminGroupName
+      Tags:
+        Stack:
+          Fn::Sub: ${AWS::StackName}
+      CodeUri: AuthorizerFunction
+  AuthorizerFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${AuthorizerFunction}
+      RetentionInDays: 7
+  AuthorizerFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - apigateway.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Tags:
+      - Key: Stack
+        Value:
+          Fn::Sub: ${AWS::StackName}
+  AuthorizerFunctionExecutionRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName:
+        Fn::Sub: ${AWS::StackName}-Authorizer-Policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action: lambda:InvokeFunction
+          Resource:
+            Fn::GetAtt:
+            - AuthorizerFunction
+            - Arn
+      Roles:
+      - Ref: AuthorizerFunctionExecutionRole
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: '''PUT,GET,DELETE,OPTIONS'''
+        AllowHeaders: '''Content-Type,Authorization,X-Forwarded-For,X-Api-Key,X-Amz-Date,X-Amz-Security-Token'''
+        AllowOrigin: '''*'''
+      Auth:
+        Authorizers:
+          LambdaAuthorizer:
+            AuthorizerPayloadFormatVersion: 1.0
+            FunctionArn:
+              Fn::GetAtt:
+              - AuthorizerFunction
+              - Arn
+            FunctionInvokeRole:
+              Fn::GetAtt:
+              - AuthorizerFunctionExecutionRole
+              - Arn
+            Identity:
+              Headers:
+              - Authorization
+        DefaultAuthorizer: LambdaAuthorizer
+      AccessLogSetting:
+        DestinationArn:
+          Fn::GetAtt:
+          - AccessLogs
+          - Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
+          "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey",
+          "status":"$context.status","protocol":"$context.protocol", "integrationStatus":
+          $context.integrationStatus, "integrationLatency": $context.integrationLatency,
+          "responseLength":"$context.responseLength" }'
+      Tags:
+        Name:
+          Fn::Sub: ${AWS::StackName}-API
+        Stack:
+          Fn::Sub: ${AWS::StackName}
+  AccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName:
+        Fn::Sub: /${AWS::StackName}/APIAccessLogs
+  LocationsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: locationid
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      Tags:
+        Stack:
+          Fn::Sub: ${AWS::StackName}
+  ResourcesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: resourceid
+        AttributeType: S
+      - AttributeName: locationid
+        AttributeType: S
+      KeySchema:
+      - AttributeName: resourceid
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      GlobalSecondaryIndexes:
+      - IndexName: locationidGSI
+        KeySchema:
+        - AttributeName: locationid
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      Tags:
+      - Key: Stack
+        Value:
+          Fn::Sub: ${AWS::StackName}
+  BookingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: bookingid
+        AttributeType: S
+      - AttributeName: userid
+        AttributeType: S
+      - AttributeName: resourceid
+        AttributeType: S
+      - AttributeName: starttimeepochtime
+        AttributeType: N
+      KeySchema:
+      - AttributeName: bookingid
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      GlobalSecondaryIndexes:
+      - IndexName: useridGSI
+        KeySchema:
+        - AttributeName: userid
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      - IndexName: bookingsByUserByTimeGSI
+        KeySchema:
+        - AttributeName: userid
+          KeyType: HASH
+        - AttributeName: starttimeepochtime
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      - IndexName: bookingsByResourceByTimeGSI
+        KeySchema:
+        - AttributeName: resourceid
+          KeyType: HASH
+        - AttributeName: starttimeepochtime
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      Tags:
+      - Key: Stack
+        Value:
+          Fn::Sub: ${AWS::StackName}
+  AlarmsKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: CMK for SNS alarms topic
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - cloudwatch.amazonaws.com
+            - sns.amazonaws.com
+          Action:
+          - kms:GenerateDataKey*
+          - kms:Decrypt
+          Resource: '*'
+        - Effect: Allow
+          Principal:
+            AWS:
+            - Fn::Sub: arn:aws:iam::${AWS::AccountId}:root
+          Action:
+          - kms:*
+          Resource: '*'
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      PendingWindowInDays: 30
+      Tags:
+      - Key: Stack
+        Value:
+          Fn::Sub: ${AWS::StackName}
+  AlarmsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId:
+        Ref: AlarmsKMSKey
+      Tags:
+      - Key: Stack
+        Value:
+          Fn::Sub: ${AWS::StackName}
+  RestApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: ApiName
+        Value:
+          Ref: RestApi
+      EvaluationPeriods: 1
+      MetricName: 5XXError
+      Namespace: AWS/ApiGateway
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  AuthorizerFunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: AuthorizerFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  LocationsFunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: LocationsFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  ResourcesFunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: ResourcesFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  BookingsFunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: BookingsFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  LocationsFunctionThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: LocationsFunction
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  ResourcesFunctionThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: ResourcesFunction
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  BookingsFunctionThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: BookingsFunction
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  AuthorizerFunctionThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value:
+          Ref: AuthorizerFunction
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  LocationsDynamoDBThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: TableName
+        Value:
+          Ref: LocationsTable
+      EvaluationPeriods: 1
+      MetricName: ThrottledRequests
+      Namespace: AWS/DynamoDB
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  ResourcesDynamoDBThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: TableName
+        Value:
+          Ref: ResourcesTable
+      EvaluationPeriods: 1
+      MetricName: ThrottledRequests
+      Namespace: AWS/DynamoDB
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  BookingsDynamoDBThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - Ref: AlarmsTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: TableName
+        Value:
+          Ref: BookingsTable
+      EvaluationPeriods: 1
+      MetricName: ThrottledRequests
+      Namespace: AWS/DynamoDB
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+  ApplicationDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName:
+        Fn::Sub: ${AWS::StackName}-dashboard
+      DashboardBody:
+        Fn::Sub: "{\n  \"widgets\": [\n      {\n          \"height\": 6,\n       \
+          \   \"width\": 6,\n          \"y\": 12,\n          \"x\": 0,\n         \
+          \ \"type\": \"metric\",\n          \"properties\": {\n              \"metrics\"\
+          : [\n                  [ \"AWS/Lambda\", \"Invocations\", \"FunctionName\"\
+          , \"${LocationsFunction}\" ],\n                  [ \".\", \"Errors\", \"\
+          .\", \".\" ],\n                  [ \".\", \"Throttles\", \".\", \".\" ],\n\
+          \                  [ \".\", \"Duration\", \".\", \".\", { \"stat\": \"Average\"\
+          \ } ],\n                  [ \".\", \"ConcurrentExecutions\", \".\", \".\"\
+          , { \"stat\": \"Maximum\" } ]\n              ],\n              \"view\"\
+          : \"timeSeries\",\n              \"region\": \"${AWS::Region}\",\n     \
+          \         \"stacked\": false,\n              \"title\": \"Locations Lambda\"\
+          ,\n              \"period\": 60,\n              \"stat\": \"Sum\"\n    \
+          \      }\n      },\n      {\n          \"height\": 6,\n          \"width\"\
+          : 6,\n          \"y\": 18,\n          \"x\": 0,\n          \"type\": \"\
+          metric\",\n          \"properties\": {\n              \"metrics\": [\n \
+          \                 [ \"AWS/Lambda\", \"Invocations\", \"FunctionName\", \"\
+          ${ResourcesFunction}\" ],\n                  [ \".\", \"Errors\", \".\"\
+          , \".\" ],\n                  [ \".\", \"Throttles\", \".\", \".\" ],\n\
+          \                  [ \".\", \"Duration\", \".\", \".\", { \"stat\": \"Average\"\
+          \ } ],\n                  [ \".\", \"ConcurrentExecutions\", \".\", \".\"\
+          , { \"stat\": \"Maximum\" } ]\n              ],\n              \"view\"\
+          : \"timeSeries\",\n              \"region\": \"${AWS::Region}\",\n     \
+          \         \"stacked\": false,\n              \"title\": \"Resources Lambda\"\
+          ,\n              \"period\": 60,\n              \"stat\": \"Sum\"\n    \
+          \      }\n      },\n      {\n          \"height\": 6,\n          \"width\"\
+          : 6,\n          \"y\": 24,\n          \"x\": 0,\n          \"type\": \"\
+          metric\",\n          \"properties\": {\n              \"metrics\": [\n \
+          \                 [ \"AWS/Lambda\", \"Invocations\", \"FunctionName\", \"\
+          ${BookingsFunction}\" ],\n                  [ \".\", \"Errors\", \".\",\
+          \ \".\" ],\n                  [ \".\", \"Throttles\", \".\", \".\" ],\n\
+          \                  [ \".\", \"Duration\", \".\", \".\", { \"stat\": \"Average\"\
+          \ } ],\n                  [ \".\", \"ConcurrentExecutions\", \".\", \".\"\
+          , { \"stat\": \"Maximum\" } ]\n              ],\n              \"view\"\
+          : \"timeSeries\",\n              \"region\": \"${AWS::Region}\",\n     \
+          \         \"stacked\": false,\n              \"title\": \"Bookings Lambda\"\
+          ,\n              \"period\": 60,\n              \"stat\": \"Sum\"\n    \
+          \      }\n      },\n      {\n          \"height\": 6,\n          \"width\"\
+          : 6,\n          \"y\": 6,\n          \"x\": 6,\n          \"type\": \"metric\"\
+          ,\n          \"properties\": {\n              \"metrics\": [\n         \
+          \         [ \"AWS/Lambda\", \"Invocations\", \"FunctionName\", \"${AuthorizerFunction}\"\
+          \ ],\n                  [ \".\", \"Errors\", \".\", \".\" ],\n         \
+          \         [ \".\", \"Throttles\", \".\", \".\" ],\n                  [ \"\
+          .\", \"Duration\", \".\", \".\", { \"stat\": \"Average\" } ],\n        \
+          \          [ \".\", \"ConcurrentExecutions\", \".\", \".\", { \"stat\":\
+          \ \"Maximum\" } ]\n              ],\n              \"view\": \"timeSeries\"\
+          ,\n              \"region\": \"${AWS::Region}\",\n              \"stacked\"\
+          : false,\n              \"title\": \"Authorizer Lambda\",\n            \
+          \  \"period\": 60,\n              \"stat\": \"Sum\"\n          }\n     \
+          \ },\n      {\n          \"height\": 6,\n          \"width\": 6,\n     \
+          \     \"y\": 12,\n          \"x\": 6,\n          \"type\": \"metric\",\n\
+          \          \"properties\": {\n              \"metrics\": [\n           \
+          \       [ \"AWS/DynamoDB\", \"ConsumedReadCapacityUnits\", \"TableName\"\
+          , \"${LocationsTable}\", { \"stat\": \"Maximum\" } ],\n                \
+          \  [ \".\", \"ConsumedWriteCapacityUnits\", \".\", \".\", { \"stat\": \"\
+          Maximum\" } ],\n                  [ \".\", \"ProvisionedReadCapacityUnits\"\
+          , \".\", \".\", { \"period\": 300 } ],\n                  [ \".\", \"ProvisionedWriteCapacityUnits\"\
+          , \".\", \".\", { \"period\": 300 } ]\n              ],\n              \"\
+          view\": \"timeSeries\",\n              \"stacked\": false,\n           \
+          \   \"region\": \"${AWS::Region}\",\n              \"title\": \"DynamoDB\
+          \ - Locations\",\n              \"period\": 60,\n              \"stat\"\
+          : \"Average\"\n          }\n      },\n      {\n          \"height\": 6,\n\
+          \          \"width\": 6,\n          \"y\": 18,\n          \"x\": 6,\n  \
+          \        \"type\": \"metric\",\n          \"properties\": {\n          \
+          \    \"metrics\": [\n                  [ \"AWS/DynamoDB\", \"ConsumedReadCapacityUnits\"\
+          , \"TableName\", \"${ResourcesTable}\", { \"stat\": \"Maximum\" } ],\n \
+          \                 [ \".\", \"ConsumedWriteCapacityUnits\", \".\", \".\"\
+          , { \"stat\": \"Maximum\" } ],\n                  [ \".\", \"ProvisionedReadCapacityUnits\"\
+          , \".\", \".\", { \"period\": 300 } ],\n                  [ \".\", \"ProvisionedWriteCapacityUnits\"\
+          , \".\", \".\", { \"period\": 300 } ]\n              ],\n              \"\
+          view\": \"timeSeries\",\n              \"stacked\": false,\n           \
+          \   \"region\": \"${AWS::Region}\",\n              \"title\": \"DynamoDB\
+          \ - Resources\",\n              \"period\": 60,\n              \"stat\"\
+          : \"Average\"\n          }\n      },\n      {\n          \"height\": 6,\n\
+          \          \"width\": 6,\n          \"y\": 24,\n          \"x\": 6,\n  \
+          \        \"type\": \"metric\",\n          \"properties\": {\n          \
+          \    \"metrics\": [\n                  [ \"AWS/DynamoDB\", \"ConsumedReadCapacityUnits\"\
+          , \"TableName\", \"${BookingsTable}\", { \"period\": 60, \"stat\": \"Maximum\"\
+          \ } ],\n                  [ \".\", \"ConsumedWriteCapacityUnits\", \".\"\
+          , \".\", { \"period\": 60, \"stat\": \"Maximum\" } ],\n                \
+          \  [ \".\", \"ProvisionedReadCapacityUnits\", \".\", \".\" ],\n        \
+          \          [ \".\", \"ProvisionedWriteCapacityUnits\", \".\", \".\" ]\n\
+          \              ],\n              \"view\": \"timeSeries\",\n           \
+          \   \"stacked\": false,\n              \"region\": \"${AWS::Region}\",\n\
+          \              \"title\": \"DynamoDB - Bookings\",\n              \"period\"\
+          : 300,\n              \"stat\": \"Average\"\n          }\n      },\n   \
+          \   {\n          \"height\": 6,\n          \"width\": 6,\n          \"y\"\
+          : 6,\n          \"x\": 0,\n          \"type\": \"metric\",\n          \"\
+          properties\": {\n              \"metrics\": [\n                  [ \"AWS/ApiGateway\"\
+          , \"4xx\", \"ApiId\", \"${RestApi}\", { \"yAxis\": \"right\" } ],\n    \
+          \              [ \".\", \"5xx\", \".\", \".\", { \"yAxis\": \"right\" }\
+          \ ],\n                  [ \".\", \"DataProcessed\", \".\", \".\", { \"yAxis\"\
+          : \"left\" } ],\n                  [ \".\", \"Count\", \".\", \".\", { \"\
+          label\": \"Count\", \"yAxis\": \"right\" } ],\n                  [ \".\"\
+          , \"IntegrationLatency\", \".\", \".\", { \"stat\": \"Average\" } ],\n \
+          \                 [ \".\", \"Latency\", \".\", \".\", { \"stat\": \"Average\"\
+          \ } ]\n              ],\n              \"view\": \"timeSeries\",\n     \
+          \         \"stacked\": false,\n              \"region\": \"${AWS::Region}\"\
+          ,\n              \"period\": 60,\n              \"stat\": \"Sum\",\n   \
+          \           \"title\": \"API Gateway\"\n          }\n      },\n      {\n\
+          \          \"height\": 6,\n          \"width\": 12,\n          \"y\": 0,\n\
+          \          \"x\": 0,\n          \"type\": \"metric\",\n          \"properties\"\
+          : {\n              \"metrics\": [\n                  [ \"${AWS::StackName}\"\
+          , \"ProcessedBookings\", \"ServiceName\", \"${BookingsFunction}\", \"LogGroup\"\
+          , \"${BookingsFunction}\", \"ServiceType\", \"AWS::Lambda::Function\", \"\
+          Service\", \"Bookings\", { \"label\": \"Processed Bookings\"} ],\n     \
+          \             [ \".\", \"ProcessedLocations\", \".\", \"${LocationsFunction}\"\
+          , \".\", \"${LocationsFunction}\", \".\", \".\", \".\", \"Locations\", {\
+          \ \"label\": \"Processed Locations\"} ],\n                  [ \".\", \"\
+          ProcessedResources\", \".\", \"${ResourcesFunction}\", \".\", \"${ResourcesFunction}\"\
+          , \".\", \".\", \".\", \"Resources\", { \"label\": \"Processed Resources\"\
+          } ]\n              ],\n              \"view\": \"timeSeries\",\n       \
+          \       \"stacked\": false,\n              \"title\": \"Business Metrics\"\
+          ,\n              \"region\": \"${AWS::Region}\",\n              \"period\"\
+          : 60,\n              \"stat\": \"Sum\"\n          }\n      }\n  ]\n}\n"
+Outputs:
+  APIEndpoint:
+    Description: API Gateway endpoint URL
+    Value:
+      Fn::Sub: https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+  DashboardURL:
+    Description: Dashboard URL
+    Value:
+      Fn::Sub: https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${ApplicationDashboard}
+  AlarmsTopic:
+    Description: SNS Topic to be used for the alarms subscriptions
+    Value:
+      Ref: AlarmsTopic
+  AccessLogs:
+    Description: CloudWatch Logs group for API Gateway access logs
+    Value:
+      Ref: AccessLogs
+  LocationsTable:
+    Description: DynamoDB Locations table
+    Value:
+      Ref: LocationsTable
+  ResourcesTable:
+    Description: DynamoDB Resources table
+    Value:
+      Ref: ResourcesTable
+  BookingsTable:
+    Description: DynamoDB Bookings table
+    Value:
+      Ref: BookingsTable
