@@ -403,7 +403,7 @@ function processAuthRequest(event, tokenIssuer, awsAccountId, apiOptions, callba
       decodedJwt.payload['cognito:groups'][0] === process.env.ADMIN_GROUP_NAME) {
         policy.allowMethod(AuthPolicy.HttpVerb.DELETE, '/locations');
         policy.allowMethod(AuthPolicy.HttpVerb.DELETE, '/locations/*');
-        policy.allowMethod(AuthPolicy.HttpVerb.PUT, '/locations');
+        policy.allowMethod(AuthPolicy.HttpVerb.POST, '/locations');
         policy.allowMethod(AuthPolicy.HttpVerb.PUT, '/locations/*');
       }
 

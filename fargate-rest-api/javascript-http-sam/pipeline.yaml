@@ -204,6 +204,66 @@ Resources:
                 Provider: Manual
                 Version: "1"
               RunOrder: 1
+            - Name: CreateVPCChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Deployment
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Deployment
+                TemplatePath: BuildArtifactAsZip::vpc.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 2
+            - Name: ExecuteVPCSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Deployment
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Deployment
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}VPCDeploymentChangeSet
+              RunOrder: 3
+            - Name: CreateECRChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-ECR-Deployment
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-ECR-Deployment
+                TemplatePath: BuildArtifactAsZip::ecr.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 4
+            - Name: ExecuteECRSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-ECR-Deployment
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-ECR-Deployment
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}ECRDeploymentChangeSet
+              RunOrder: 5
             - Name: CreateCognitoChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -219,7 +279,7 @@ Resources:
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
                 - Name: BuildArtifactAsZip
-              RunOrder: 2
+              RunOrder: 6
             - Name: ExecuteCognitoChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -233,7 +293,7 @@ Resources:
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Cognito-Deployment
               OutputArtifacts:
                 - Name: !Sub ${AWS::StackName}CognitoDeploymentChangeSet
-              RunOrder: 3
+              RunOrder: 7
             - Name: CreateApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -250,7 +310,7 @@ Resources:
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
                 - Name: BuildArtifactAsZip
-              RunOrder: 2
+              RunOrder: 8
             - Name: ExecuteApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -264,7 +324,7 @@ Resources:
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Deployment
               OutputArtifacts:
                 - Name: !Sub ${AWS::StackName}DeploymentChangeSet
-              RunOrder: 5
+              RunOrder: 9
 
   # IAM roles/policies for the pipeline
   ApplicationCodeBuildServiceRole:

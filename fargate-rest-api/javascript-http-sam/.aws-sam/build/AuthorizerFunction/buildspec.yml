@@ -16,8 +16,16 @@ phases:
       - rm -rf ./__tests__
       # Remove all dependencies not needed for the Lambda deployment package (the packages from devDependencies in package.json)
       - npm prune --production
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 662754177324.dkr.ecr.us-east-1.amazonaws.com
+      - REPOSITORY_URI=662754177324.dkr.ecr.us-east-1.amazonaws.com/locations-service-repository
   build:
     commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       # Use AWS SAM to package the application by using AWS CloudFormation
       - aws cloudformation package --template template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template application.yaml
 artifacts:
@@ -26,3 +34,4 @@ artifacts:
   files:
     -  ./javascript-http-sam/application.yaml
     - ./shared/cognito.yaml
+    - ./shared/vpc.yaml

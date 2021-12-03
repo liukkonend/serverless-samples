@@ -1,0 +1,20 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+Description: >
+  This template creates ECR repositories for the application's Docker images.
+
+Resources:
+  LocationsServiceRepository: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "locations-service-repository"
+      ImageScanningConfiguration: 
+        ScanOnPush: "true"
+
+Outputs:
+  LocationsServiceRepositoryUri:
+    Description: Repository URI for Locations Service
+    Value: !GetAtt LocationsServiceRepository.RepositoryUri
+    Export: 
+      Name: !Sub ${AWS::StackName}-LocationsServiceRepositoryUri

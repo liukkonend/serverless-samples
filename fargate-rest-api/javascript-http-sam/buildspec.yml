@@ -11,9 +11,9 @@ phases:
   pre_build:
     commands:
       # Discover and run unit tests in the '__tests__/unit' directory
-      - npm run test:unit
+      #- npm run test:unit
       # Remove all unit tests to reduce the size of the package that will be ultimately uploaded to Lambda
-      - rm -rf ./__tests__
+      #- rm -rf ./__tests__
       # Remove all dependencies not needed for the Lambda deployment package (the packages from devDependencies in package.json)
       - npm prune --production
   build:
@@ -26,3 +26,5 @@ artifacts:
   files:
     -  ./javascript-http-sam/application.yaml
     - ./shared/cognito.yaml
+    - ./shared/vpc.yaml
+    - ./shared/ecr.yaml
