@@ -16,16 +16,20 @@ Globals:
     Tracing: Active
 
 Parameters:
-  CognitoStackName:
-    Description: An environment name for Cognito stack
+  LocationsServiceRepositoryUri:
     Type: String
-    Default: serverless-api-cognito
-  VPCStackName:
-    Description: An environment name for VPC stack
-    Type: String
-    Default: fargate-rest-api-vpc
 
 Resources:
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../shared/vpc.yaml
+
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../shared/cognito.yaml
+
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
@@ -46,7 +50,7 @@ Resources:
           Environment:
             - Name: LOCATIONS_TABLE
               Value: !Ref LocationsTable
-          Image: 662754177324.dkr.ecr.us-east-1.amazonaws.com/locations-service-repository:1.0.0
+          Image: !Ref LocationsServiceRepositoryUri
           PortMappings:
             - ContainerPort: 8080
           LogConfiguration:
@@ -90,12 +94,12 @@ Resources:
           SecurityGroups:
             - !GetAtt LocationsServiceSecurityGroup.GroupId
           Subnets:
-            - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnet1"
-            - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnet2"
+            - !GetAtt VPCStack.Outputs.PrivateSubnet1
+            - !GetAtt VPCStack.Outputs.PrivateSubnet2
       TaskDefinition: !Ref LocationsServiceTaskDefinition
     DependsOn:
       - LocationsServiceLoadBalancerTargetGroup
-      - LocationsServiceLoadBalancerPublicHTTPListener
+      - LocationsServiceLoadBalancerHTTPListener
 
   LocationsServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -106,14 +110,12 @@ Resources:
           Description: Allow all outbound traffic by default
           IpProtocol: "-1"
       SecurityGroupIngress:
-        - CidrIp: 
-            Fn::ImportValue: !Sub "${VPCStackName}-VPCCIDR"
+        - CidrIp: !GetAtt VPCStack.Outputs.VPCCIDR
           Description: Allow from within the VPC for port 8080
           FromPort: 8080
           IpProtocol: tcp
           ToPort: 8080
-      VpcId: 
-        Fn::ImportValue: !Sub "${VPCStackName}-VPC"
+      VpcId: !GetAtt VPCStack.Outputs.VPCID
 
   LocationsServiceLoadBalancerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -124,10 +126,9 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckPath: /health
       HealthCheckPort: 8080
-      VpcId: 
-        Fn::ImportValue: !Sub "${VPCStackName}-VPC"
+      VpcId: !GetAtt VPCStack.Outputs.VPCID
 
-  LocationsServiceLoadBalancerPublicHTTPListener:
+  LocationsServiceLoadBalancerHTTPListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
@@ -145,14 +146,14 @@ Resources:
           Value: "false"
       Scheme: internal
       Subnets:
-        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnet1"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnet2"
+        - !GetAtt VPCStack.Outputs.PrivateSubnet1
+        - !GetAtt VPCStack.Outputs.PrivateSubnet2
       Type: network
 
   LocationsServiceVPCLink:
     Type: AWS::ApiGateway::VpcLink
     Properties:
-      Name: !Sub "${VPCStackName}LocationsServiceVPCLink"
+      Name: !Sub "${AWS::StackName}LocationsServiceVPCLink"
       TargetArns:
         - !Ref LocationsServiceLoadBalancer
 
@@ -214,12 +215,8 @@ Resources:
       Description: Handler for Lambda authorizer
       Environment:
         Variables:
-          USER_POOL_ID: 
-            Fn::ImportValue: 
-              !Sub "${CognitoStackName}-UserPool"
-          ADMIN_GROUP_NAME: 
-            Fn::ImportValue: 
-              !Sub "${CognitoStackName}-UserPoolAdminGroupName"
+          USER_POOL_ID: !GetAtt CognitoStack.Outputs.UserPool
+          ADMIN_GROUP_NAME: !GetAtt CognitoStack.Outputs.UserPoolAdminGroupName
       Tags:
         Stack: !Sub "${AWS::StackName}"
 

@@ -1,4 +1,5 @@
-FROM node:14
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 # Create app directory
 WORKDIR /usr/src/app
