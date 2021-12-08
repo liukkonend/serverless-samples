@@ -196,24 +196,15 @@ Resources:
       InternetGatewayId: !Ref IGW
 
 Outputs:
-  VPC:
+  VPCID:
     Description: VPC ID
     Value: !Ref VPC
-    Export: 
-      Name: !Sub ${AWS::StackName}-VPC
   VPCCIDR:
     Description: VPC CIDR block
     Value: !GetAtt VPC.CidrBlock
-    Export: 
-      Name: !Sub ${AWS::StackName}-VPCCIDR
   PrivateSubnet1:
     Description: PrivateSubnet1 ID
     Value: !Ref PrivateSubnet1
-    Export: 
-      Name: !Sub ${AWS::StackName}-PrivateSubnet1
   PrivateSubnet2:
     Description: PrivateSubnet2 ID
     Value: !Ref PrivateSubnet2
-    Export: 
-      Name: !Sub ${AWS::StackName}-PrivateSubnet2
-  
