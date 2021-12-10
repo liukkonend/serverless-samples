@@ -7,31 +7,10 @@ phases:
     commands:
       # Install all dependencies (including dependencies for running tests)
       - cd ./javascript-http-sam
-      - npm install
-      # Authenticate with Docker
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
   pre_build:
     commands:
-      # Discover and run unit tests in the '__tests__/unit' directory
-      #- npm run test:unit
-      # Remove all unit tests to reduce the size of the package that will be ultimately uploaded to Lambda
-      #- rm -rf ./__tests__
-      # Remove all dependencies not needed for the Lambda deployment package (the packages from devDependencies in package.json)
-      - npm prune --production
-      # Build docker image
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:latest ./src/api/locations
-      - docker tag $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:latest $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:$LOCATIONS_SERVICE_IMAGE_TAG
   build:
     commands:
-      # Use AWS SAM to package the application by using AWS CloudFormation
-      - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:latest
-      - docker push $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:$LOCATIONS_SERVICE_IMAGE_TAG
-      - echo Writing image definitions file...
-      - printf '[{"name":"locations-service","imageUri":"%s"}]' $LOCATIONS_SERVICE_ECR_REPOSITORY_URI:$LOCATIONS_SERVICE_IMAGE_TAG > imagedefinitions.json
       # Package app
       - aws cloudformation package --template template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template application.yaml
 artifacts:
@@ -39,6 +18,5 @@ artifacts:
   discard-paths: yes
   files:
     - ./javascript-http-sam/application.yaml
-    - ./javascript-http-sam/imagedefinitions.json
     - ./shared/cognito.yaml
     - ./shared/vpc.yaml

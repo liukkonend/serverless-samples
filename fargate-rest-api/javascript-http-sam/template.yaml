@@ -268,7 +268,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./src/api/swagger.yaml
+            Location: ./swagger.yaml
       Cors:
         AllowMethods: "'PUT, GET, DELETE, OPTIONS'"
         AllowHeaders: "'Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Api-Key', 'X-Amz-Date', 'X-Amz-Security-Token'"
