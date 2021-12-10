@@ -1,5 +1,0 @@
-datetime
-boto3
-python-jose
-aws-xray-sdk
-aws-embedded-metrics
