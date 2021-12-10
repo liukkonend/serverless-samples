@@ -205,7 +205,7 @@ Resources:
   LocationsServiceLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/ecs/locations-service"
+      LogGroupName: !Sub "/aws/ecs/${AWS::StackName}-locations-service"
       RetentionInDays: 7
 
   AuthorizerFunction:
