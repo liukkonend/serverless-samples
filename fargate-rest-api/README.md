@@ -1,4 +1,4 @@
-# serverless-rest-api
+# fargate-rest-api
 
 These REST API examples demonstrate end-to-end implementations of a simple application using a serverless approach that includes CI/CD pipelines, automated unit and integration testing, and workload observability. The examples include multiple implementations of the same application using a variety of development platform and infrastructure as a code approaches. The patterns here will benefit beginners as well as seasoned developers looking to improve their applications by automating routine tasks.
 
@@ -10,7 +10,7 @@ There are various blog posts and code examples for serverless APIs available, ho
  - API access logging as part of SAM templates
  - business specific metrics
 
-Examples are (loosely) based on a [SpaceFinder project](https://github.com/amazon-archives/aws-serverless-auth-reference-app). The services used by this application include Amazon API Gateway, Amazon Cognito, AWS Lambda, and Amazon DynamoDB. The CI/CD pipelines use AWS CodePipeline, AWS CodeCommit, and AWS CodeBuild. 
+Examples are (loosely) based on a [SpaceFinder project](https://github.com/amazon-archives/aws-serverless-auth-reference-app). The services used by this application include Amazon API Gateway, Amazon Cognito, AWS Lambda, Amazon ECS, AWS Fargate, and Amazon DynamoDB. The CI/CD pipelines use AWS CodePipeline, AWS CodeCommit, and AWS CodeBuild. 
 
 ## Architecture
 
