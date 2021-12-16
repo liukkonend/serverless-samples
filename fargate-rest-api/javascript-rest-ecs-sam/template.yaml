@@ -115,7 +115,7 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 1
+      DesiredCount: 2
       EnableECSManagedTags: false
       HealthCheckGracePeriodSeconds: 5
       LaunchType: FARGATE
@@ -327,7 +327,7 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 1
+      DesiredCount: 2
       EnableECSManagedTags: false
       HealthCheckGracePeriodSeconds: 5
       LaunchType: FARGATE
@@ -542,7 +542,7 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 1
+      DesiredCount: 2
       EnableECSManagedTags: false
       HealthCheckGracePeriodSeconds: 5
       LaunchType: FARGATE

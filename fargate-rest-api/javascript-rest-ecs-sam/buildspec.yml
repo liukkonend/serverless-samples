@@ -6,7 +6,7 @@ phases:
   install:
     commands:
       # Install all dependencies (including dependencies for running tests)
-      - cd ./javascript-http-sam
+      - cd ./javascript-rest-ecs-sam
       - npm ci --only=production
   pre_build:
     commands:
@@ -18,6 +18,6 @@ artifacts:
   type: zip
   discard-paths: yes
   files:
-    - ./javascript-http-sam/application.yaml
+    - ./javascript-rest-ecs-sam/application.yaml
     - ./shared/cognito.yaml
     - ./shared/vpc.yaml
