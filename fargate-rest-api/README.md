@@ -31,16 +31,16 @@ After authentication and authorization is complete, API Gateway forwards request
 These examples create following resources in your AWS account:
  - API Gateway endpoint that serves all API requests
  - Lambda function used as a Lambda Authorizer for API Gateway
- - Lambda functions to process requests coming to API Gateway
+ - ECS tasks and service to process requests and business logic
+ - Network Load Balancers to distribute requests to the ECS services
  - DynamoDB tables to store data 
  - IAM Roles and permissions for Lambda functions
  - API Gateway access logs stream in CloudWatch Logs
  - SNS topic for the alarms
  - API Gateway HTTP errors alarm 
- - Errors alarms for all Lambda functions
- - Throttling alarms for all Lambda functions
+ - CPU and Memory Utilization alarms for all ECS services
  - Throttling alarms for all DynamoDB tables
- - CloudWatch Dashboard with API Gateway, Lambda, DynamoDB, and business metrics preconfigured
+ - CloudWatch Dashboard with API Gateway, Lambda, ECS services, DynamoDB, and business metrics preconfigured
 
 One of the easiest ways to see all those resources listed is navigating to the AWS Console, picking the Lambda service and checking out the Applications link on the left:
 
@@ -73,9 +73,6 @@ Each example includes unit and integration tests that are run automatically by t
  
  ## Examples
  Check these implementations of the example API for more details and resources to explore.
- - [python-rest-sam](./python-rest-sam) - this REST API implementation uses Python, AWS SAM, AWS CloudFormation
- - [javascript-http-sam](./javascript-http-sam) - this HTTP API implementation uses Node.js, AWS SAM, AWS CloudFormation
- - [python-http-sam](./python-http-sam) - this HTTP API implementation uses Python, AWS SAM, AWS CloudFormation
- - [python-http-cdk](./python-http-cdk) - this HTTP API implementation uses Python, AWS CDK, AWS CloudFormation
+ - [javascript-ecs-nlb-sam](./javascript-ecs-nlb-sam) - this REST API implementation uses Node.js on Amazon ECS, AWS Fargate, AWS SAM, AWS CloudFormation
  - [shared](./shared) - resources shared across the projects, such as Amazon Cognito stack, Amazon Virtual Private Cloud stack, etc. 
 
