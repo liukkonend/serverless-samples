@@ -1085,7 +1085,7 @@ Resources:
             "widgets": [
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 6,
                     "x": 0,
                     "type": "metric",
@@ -1107,9 +1107,9 @@ Resources:
                 },
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 6,
-                    "x": 12,
+                    "x": 8,
                     "type": "metric",
                     "properties": {
                         "metrics": [
@@ -1129,9 +1129,9 @@ Resources:
                 },
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 6,
-                    "x": 18,
+                    "x": 16,
                     "type": "metric",
                     "properties": {
                         "metrics": [
@@ -1173,7 +1173,7 @@ Resources:
                 },
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 12,
                     "x": 0,
                     "type": "metric",
@@ -1194,9 +1194,9 @@ Resources:
                 },
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 12,
-                    "x": 6,
+                    "x": 8,
                     "type": "metric",
                     "properties": {
                         "metrics": [
@@ -1215,9 +1215,9 @@ Resources:
                 },
                 {
                     "height": 6,
-                    "width": 6,
+                    "width": 8,
                     "y": 12,
-                    "x": 12,
+                    "x": 16,
                     "type": "metric",
                     "properties": {
                         "metrics": [
