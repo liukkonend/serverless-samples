@@ -4,13 +4,13 @@ This is implementation of the backend API using AWS API Gateway HTTP endpoint, N
 ## Project structure
 This project contains source code and supporting files for a serverless application that you can deploy with the AWS Serverless Application Model (AWS SAM) command line interface (CLI). It includes the following files and folders:
 
-- `src\api` - Code for the application's containers
-- `src\api\bookings` - Application code for the Bookings Service
-- `src\api\bookings` - Unit tests for the Bookings Service
-- `src\api\locations` - Application code for the Locations Service
-- `src\api\locations` - Unit tests for the Locations Service
-- `src\api\resources` - Application code for the Resources Service
-- `src\api\resources` - Unit tests for the Resources Service
+- `src/api` - Code for the application's containers
+- `src/api/bookings` - Application code for the Bookings Service
+- `src/api/bookings/__tests__` - Unit tests for the Bookings Service
+- `src/api/locations` - Application code for the Locations Service
+- `src/api/locations/__tests__` - Unit tests for the Locations Service
+- `src/api/resources` - Application code for the Resources Service
+- `src/api/resources/__tests__` - Unit tests for the Resources Service
 - `__tests__/integration` - Integration tests for the API. 
 - `__tests__/testspec.yml` - A template that defines the API's test process used by the CI/CD pipeline (both unit and integration testing).
 - `template.yaml` - A template that defines the application's AWS resources.
@@ -74,7 +74,7 @@ This will trigger a new deployment in CodePipeline. Navigate to the CodePipeline
 ## Amazon Cognito setup
 Amazon Cognito is automatically deployed with the application as part of the CI/CD pipeline. A distinct user pool is used for each of the Testing and Production environments.
 
-After the application is deployed, you will need to create user account for authentication/authorization (CI/CD pipeline will perform those steps for you automatically):
+After the application is deployed, you will need to create user account for authentication/authorization:
 
 - Navigate to URL specified in the shared stack template outputs as CognitoLoginURL and click link "Sign Up". After filling in new user registration form you should receive email with verification code, use it to confirm your account. 
 
@@ -93,11 +93,11 @@ aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id <cognit
 ```
 
 ## Unit tests
-Unit tests are defined in the `__tests__\unit` folder in this project. Use `npm` to install the [Jest test framework](https://jestjs.io/) and run unit tests.
+Unit tests are defined in the `__tests__` folder iwithin each service (i.e. `src/api/locations`). Use `npm` to install the [Jest test framework](https://jestjs.io/) and run unit tests.
 
 ```bash
-my-application$ npm install
-my-application$ npm run test:unit
+npm install
+npm run test:unit
 ```
 
 ## Cleanup
