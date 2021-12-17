@@ -6,7 +6,7 @@ phases:
   install:
     commands:
       # Install all dependencies (including dependencies for running tests)
-      - cd ./javascript-http-sam/src/api/bookings
+      - cd ./javascript-rest-ecs-sam/src/api/bookings
       - npm install
       # Authenticate with Docker
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com

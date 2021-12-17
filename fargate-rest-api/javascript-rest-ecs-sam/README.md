@@ -42,7 +42,11 @@ cd javascript-rest-ecs-sam
 To create the pipeline you will need to run the following command:
 
 ```bash
-aws cloudformation create-stack --stack-name fargate-api-pipeline --template-body file://pipeline.yaml --capabilities CAPABILITY_IAM
+
+# Let's save our stack name so we can use it in other commands
+export STACK_NAME=fargate-rest-api-pipeline
+
+aws cloudformation deploy --stack-name $STACK_NAME --template-file ./pipeline.yaml --capabilities CAPABILITY_IAM
 ```
 
 Once the stack is created, the pipeline will attempt to run and will fail at the SourceCodeRepo stage as there is no code in the AWS CodeCommit yet.
@@ -51,25 +55,26 @@ Once the stack is created, the pipeline will attempt to run and will fail at the
 
 ***Note:** You may need to set up AWS CodeCommit repository access for HTTPS users [using Git credentials](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html?icmpid=docs_acc_console_connect_np) and [set up the AWS CLI Credential Helper](https://docs.aws.amazon.com/console/codecommit/connect-tc-alert-np).*
 
-Once you have access to the code repository, run the following command:
+To view the CodeCommit URLs, run the following:
+```bash
+aws cloudformation describe-stacks --stack-name $STACK_NAME | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "CodeCommitRepositoryHttpUrl" or .OutputKey == "CodeCommitRepositorySshUrl")'
+```
+
+Copy the desired URL (i.e. HTTPS, SSH) and run the following command:
 
 ```bash
-git remote add origin <URL to AWS CodeCommit repository -- provided in Outputs when creating pipeline stack>
+git remote add origin <URL to AWS CodeCommit repository>
 git push origin main
 ```
 
-Navigate to the CodePipeline in AWS Management Console and release this change if needed by clicking "Release change" button.
+This will trigger a new deployment in CodePipeline. Navigate to the CodePipeline in AWS Management Console to see the process and status. You can also release changes manually by clicking the "Release change" button.
 
 ![CodePipeline](./assets/CodePipeline.png)
 
-Note that same Amazon Cognito stack is used in both testing and production deployment stages, same user credentials can be used for testing and API access.
-
 ## Amazon Cognito setup
-This example uses shared stack that deploys Amazon Cognito resources, it will be deployed automatically if you use CI/CD pipeline. 
+Amazon Cognito is automatically deployed with the application as part of the CI/CD pipeline. A distinct user pool is used for each of the Testing and Production environments.
 
-See [README.md](../shared/README.md) in shared resources directory for the stack manual deployment instructions. After manual deployment is finished make sure to update your SAM template file `template.yaml` parameter CognitoStackName with the shared Cognito stack name. 
-
-After stack is created manually you will need to create user account for authentication/authorization (CI/CD pipeline will perform those steps for you automatically):
+After the application is deployed, you will need to create user account for authentication/authorization (CI/CD pipeline will perform those steps for you automatically):
 
 - Navigate to URL specified in the shared stack template outputs as CognitoLoginURL and click link "Sign Up". After filling in new user registration form you should receive email with verification code, use it to confirm your account. 
 
@@ -97,4 +102,32 @@ my-application$ npm run test:unit
 
 ## Cleanup
 
-# TO DO
+To delete the sample application that you created, use the AWS CLI:
+
+```bash
+# Delete the application stacks
+aws cloudformation delete-stack --stack-name fargate-rest-api-pipeline-Testing
+aws cloudformation delete-stack --stack-name fargate-rest-api-pipeline-Deployment
+
+# Wait for the deletions to complete before deleting the pipeline stacks
+aws cloudformation wait stack-delete-complete --stack-name fargate-rest-api-pipeline-Testing
+aws cloudformation wait stack-delete-complete --stack-name fargate-rest-api-pipeline-Deployment
+
+# Delete/empty ECR repositories and S3 buckets
+pipelineStackOutputs=$(aws cloudformation describe-stacks --stack-name $STACK_NAME | jq -r '.Stacks[0].Outputs')
+bookingsRepositoryName=$(echo "$pipelineStackOutputs" | jq -r '.[] | select(.OutputKey == "BookingsServiceRepositoryName") | .OutputValue')
+locationsRepositoryName=$(echo "$pipelineStackOutputs" | jq -r '.[] | select(.OutputKey == "LocationsServiceRepositoryName") | .OutputValue')
+resourcesRepositoryName=$(echo "$pipelineStackOutputs" | jq -r '.[] | select(.OutputKey == "ResourcesServiceRepositoryName") | .OutputValue')
+
+aws ecr delete-repository --repository-name $bookingsRepositoryName --force
+aws ecr delete-repository --repository-name $locationsRepositoryName --force
+aws ecr delete-repository --repository-name $resourcesRepositoryName --force
+
+artifactBucketName=$(echo "$pipelineStackOutputs" | jq -r '.[] | select(.OutputKey == "BuildArtifactS3Bucket") | .OutputValue')
+
+aws s3 rm s3://$artifactBucketName --recursive
+
+# Delete pipeline stack
+aws cloudformation delete-stack --stack-name $STACK_NAME
+aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+```
