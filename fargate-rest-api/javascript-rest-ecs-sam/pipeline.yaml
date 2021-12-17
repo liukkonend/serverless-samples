@@ -38,13 +38,6 @@ Resources:
   BuildArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      VersioningConfiguration:
-        Status: Enabled
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteOldVersions
-            Status: Enabled
-            NoncurrentVersionExpirationInDays: 30
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -603,6 +596,18 @@ Outputs:
   CodeCommitRepositoryHttpUrl:
     Description: AWS CodeCommit Git repository
     Value: !GetAtt CodeRepository.CloneUrlHttp
+  
+  BookingsServiceRepositoryName:
+    Description: Name of the Bookings Service ECR Repository
+    Value: !Ref BookingsServiceRepository
+
+  LocationsServiceRepositoryName:
+    Description: Name of the Locations Service ECR Repository
+    Value: !Ref LocationsServiceRepository
+
+  ResourcesServiceRepositoryName:
+    Description: Name of the Resources Service ECR Repository
+    Value: !Ref ResourcesServiceRepository
 
   CodeCommitRepositorySshUrl:
     Description: AWS CodeCommit Git repository
