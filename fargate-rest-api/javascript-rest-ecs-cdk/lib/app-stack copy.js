@@ -11,7 +11,6 @@ const elb = require('aws-cdk-lib/aws-elasticloadbalancingv2');
 const { Policy, ManagedPolicy, PolicyStatement } = require('aws-cdk-lib/aws-iam');
 const { Function, Runtime, Code } = require('aws-cdk-lib/aws-lambda');
 const { UserPool, Mfa, StringAttribute, OAuthScope } = require('aws-cdk-lib/aws-cognito');
-const { DockerImageAsset } = require('aws-cdk-lib/aws-ecr-assets');
 
 class AppStack extends Stack {
   /**
@@ -68,7 +67,7 @@ class AppStack extends Stack {
       }
     });
 
-    userPool.addDomain('userPoolDomain', {
+    const domain = userPool.addDomain('userPoolDomain', {
       cognitoDomain: { domainPrefix: userPoolClient.userPoolClientId }
     });
 
@@ -107,10 +106,6 @@ class AppStack extends Stack {
       ],
     }))
 
-    const locationsServiceImage = new DockerImageAsset(this, 'locations-service-image', {
-      directory: path.join(__dirname, '..', 'src', 'api', 'locations')
-    });
-
     locationServiceTaskDefinition.addContainer('locations-service', {
       environment: {
         'LOCATIONS_TABLE': locationsTable.tableName,
@@ -126,8 +121,7 @@ class AppStack extends Stack {
         logGroup: locationsServiceLogGroup,
         streamPrefix: 'ecs'
       }),
-      image: ContainerImage.fromDockerImageAsset(locationsServiceImage)
-      // image: new EcrImage(Repository.fromRepositoryName(this, 'locations-service-repo', 'fargate-rest-api-pipeline-locations-service-repository'), 'latest')
+      image: new EcrImage(Repository.fromRepositoryName(this, 'locations-service-repo', 'fargate-rest-api-pipeline-locations-service-repository'), 'latest')
     });
 
     locationServiceTaskDefinition.addContainer('cwagent', {
@@ -225,7 +219,7 @@ class AppStack extends Stack {
     })
 
     const locationsResource = api.root.addResource("locations");
-    locationsResource.addMethod('GET', new Integration({
+    const locationsGetMethod = locationsResource.addMethod('GET', new Integration({
       type: IntegrationType.HTTP_PROXY,
       uri: `http://${locationsService.loadBalancer.loadBalancerDnsName}/locations`,
       integrationHttpMethod: 'GET',
