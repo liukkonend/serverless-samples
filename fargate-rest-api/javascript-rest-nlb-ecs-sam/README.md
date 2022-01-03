@@ -26,15 +26,15 @@ The application uses shared Amazon Cognito stack for authentication/authorizatio
 ## Prerequisites
 - AWS CLI: `aws --version`
 - Node.js: `node --version` (Use 14+)
-- [jq](https://stedolan.github.io/jq/): jq --version
+- [jq](https://stedolan.github.io/jq/): `jq --version`
 
 ## Deploying with CI/CD pipeline
 You will use the CloudFormation CLI to deploy the stack defined within `pipeline.yaml`. This will deploy the required foundation which will allow you to make changes to your application and deploy them in a CI/CD fashion. 
-    The following resources will be created:
-        - CodeCommit repository for application code source control
-        - Elastic Container Registry repositories for housing the application's container images
-        - CodeBuild project for building and testing the application
-        - CodePipeline for orchestrating the CI/CD process
+The following resources will be created:
+- CodeCommit repository for application code source control
+- Elastic Container Registry repositories for housing the application's container images
+- CodeBuild project for building and testing the application
+- CodePipeline for orchestrating the CI/CD process
 
 To create the CI/CD pipeline we will split out code for this set of examples from the serverless-samples repository into a separate directory and use it as a codebase for our pipeline. 
 
@@ -47,7 +47,7 @@ git init -b main
 git pull ../serverless-samples fargate-rest-api
 ```
 
-To create the pipeline you will need to run the following command:
+To create the pipeline (deploying the CloudFormation stack), run the following commands:
 
 ```bash
 STACK_NAME=fargate-rest-api-pipeline
@@ -61,15 +61,15 @@ Once the stack is created, the pipeline will attempt to run and will fail at the
 
 ***Note:** You may need to set up AWS CodeCommit repository access for HTTPS users [using Git credentials](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html?icmpid=docs_acc_console_connect_np) and [set up the AWS CLI Credential Helper](https://docs.aws.amazon.com/console/codecommit/connect-tc-alert-np).*
 
-To view the CodeCommit URLs, run the following:
+To view the CodeCommit URLs, run the following command:
 ```bash
 aws cloudformation describe-stacks --stack-name $STACK_NAME | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "CodeCommitRepositoryHttpUrl" or .OutputKey == "CodeCommitRepositorySshUrl")'
 ```
 
-Copy the desired URL (i.e. HTTPS, SSH) and run the following command:
+Run the following commands (with the desired URL (i.e. HTTPS, SSH) in place of `<CodeCommit_URL>`):
 
 ```bash
-git remote add origin <URL to AWS CodeCommit repository>
+git remote add origin <CodeCommit_URL>
 git push origin main
 ```
 
@@ -147,7 +147,7 @@ npm run test:unit
 
 ## Cleanup
 
-To delete the sample application that you created, use the AWS CLI:
+To delete the sample application that you created, run the following commands:
 
 ```bash
 aws cloudformation delete-stack --stack-name $STACK_NAME-Testing
