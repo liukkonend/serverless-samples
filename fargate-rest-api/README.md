@@ -74,5 +74,4 @@ Each example includes unit and integration tests that are run automatically by t
  ## Examples
  Check these implementations of the example API for more details and resources to explore.
  - [javascript-rest-nlb-ecs-sam](./javascript-rest-nlb-ecs-sam) - this REST API implementation uses Node.js on Amazon ECS, AWS Fargate, Amazon API Gateway, Network Load Balancer, AWS SAM, AWS CloudFormation
- - [shared](./shared) - resources shared across the projects, such as Amazon Cognito stack, Amazon Virtual Private Cloud stack, etc. 
 
