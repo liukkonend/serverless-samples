@@ -184,6 +184,10 @@ Resources:
         EnvironmentVariables:
           - Name: TEST_APPLICATION_STACK_NAME
             Value: !Sub ${AWS::StackName}-Testing
+          - Name: TEST_COGNITO_STACK_NAME
+            Value: !Sub ${AWS::StackName}-Cognito-Testing
+          - Name: TEST_VPC_STACK_NAME
+            Value: !Sub ${AWS::StackName}-VPC-Testing
       ServiceRole: !GetAtt IntegrationTestCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -269,6 +273,68 @@ Resources:
               RunOrder: 2
         - Name: Testing
           Actions:
+            - Name: CreateCognitoChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-Cognito-Testing
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Cognito-Testing
+                TemplatePath: BuildArtifactAsZip::cognito.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 1
+            - Name: ExecuteCognitoChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-Cognito-Testing
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Cognito-Testing
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}CognitoTestingChangeSet
+              Namespace: CognitoTestingOutputs
+              RunOrder: 2
+            - Name: CreateVPCChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Testing
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Testing
+                TemplatePath: BuildArtifactAsZip::vpc.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 1
+            - Name: ExecuteVPCChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Testing
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Testing
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}VPCTestingChangeSet
+              Namespace: VPCTestingOutputs
+              RunOrder: 2
             - Name: CreateApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -281,11 +347,22 @@ Resources:
                 StackName: !Sub ${AWS::StackName}-Testing
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Testing
                 TemplatePath: BuildArtifactAsZip::application.yaml
-                ParameterOverrides: !Sub '{"LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"}'
+                ParameterOverrides: !Sub |
+                  {
+                      "VPCID": "#{VPCTestingOutputs.VPCID}",
+                      "VPCCIDR": "#{VPCTestingOutputs.VPCCIDR}",
+                      "PrivateSubnet1": "#{VPCTestingOutputs.PrivateSubnet1}",
+                      "PrivateSubnet2": "#{VPCTestingOutputs.PrivateSubnet2}",
+                      "UserPool": "#{CognitoTestingOutputs.UserPool}",
+                      "UserPoolAdminGroupName": "#{CognitoTestingOutputs.UserPoolAdminGroupName}",
+                      "LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
+                      "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
+                      "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
+                  }
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
                 - Name: BuildArtifactAsZip
-              RunOrder: 1
+              RunOrder: 3
             - Name: ExecuteApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -299,7 +376,7 @@ Resources:
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Testing
               OutputArtifacts:
                 - Name: !Sub ${AWS::StackName}ApplicationTestingChangeSet
-              RunOrder: 2
+              RunOrder: 4
             - Name: IntegrationTest
               ActionTypeId:
                 Category: Build
@@ -310,7 +387,7 @@ Resources:
                 ProjectName: !Ref IntegrationTestProject
               InputArtifacts:
                 - Name: SourceCodeAsZip
-              RunOrder: 3
+              RunOrder: 5
         - Name: Production
           Actions:
             - Name: ProductionApproval
@@ -320,6 +397,68 @@ Resources:
                 Provider: Manual
                 Version: "1"
               RunOrder: 1
+            - Name: CreateCognitoChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-Cognito-Production
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Cognito-Production
+                TemplatePath: BuildArtifactAsZip::cognito.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 2
+            - Name: ExecuteCognitoChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-Cognito-Production
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Cognito-Production
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}CognitoProductionChangeSet
+              Namespace: CognitoProductionOutputs
+              RunOrder: 3
+            - Name: CreateVPCChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Production
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Production
+                TemplatePath: BuildArtifactAsZip::vpc.yaml
+                Capabilities: CAPABILITY_IAM
+              InputArtifacts:
+                - Name: BuildArtifactAsZip
+              RunOrder: 2
+            - Name: ExecuteVPCChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                StackName: !Sub ${AWS::StackName}-VPC-Production
+                ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-VPC-Production
+              OutputArtifacts:
+                - Name: !Sub ${AWS::StackName}VPCProductionChangeSet
+              Namespace: VPCProductionOutputs
+              RunOrder: 3
             - Name: CreateApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -332,11 +471,22 @@ Resources:
                 StackName: !Sub ${AWS::StackName}-Production
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Production
                 TemplatePath: BuildArtifactAsZip::application.yaml
-                ParameterOverrides: !Sub '{"LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"}'
+                ParameterOverrides: !Sub |
+                  {
+                      "VPCID": "#{VPCProductionOutputs.VPCID}",
+                      "VPCCIDR": "#{VPCProductionOutputs.VPCCIDR}",
+                      "PrivateSubnet1": "#{VPCProductionOutputs.PrivateSubnet1}",
+                      "PrivateSubnet2": "#{VPCProductionOutputs.PrivateSubnet2}",
+                      "UserPool": "#{CognitoProductionOutputs.UserPool}",
+                      "UserPoolAdminGroupName": "#{CognitoProductionOutputs.UserPoolAdminGroupName}",
+                      "LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
+                      "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
+                      "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
+                  }
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
                 - Name: BuildArtifactAsZip
-              RunOrder: 2
+              RunOrder: 4
             - Name: ExecuteApplicationChangeSet
               ActionTypeId:
                 Category: Deploy
@@ -350,7 +500,7 @@ Resources:
                 ChangeSetName: !Sub ${AWS::StackName}-ChangeSet-Production
               OutputArtifacts:
                 - Name: !Sub ${AWS::StackName}ProductionChangeSet
-              RunOrder: 3
+              RunOrder: 5
 
   # IAM roles/policies for the pipeline
   ApplicationCodeBuildServiceRole:
@@ -438,6 +588,8 @@ Resources:
                 Action: "cloudformation:DescribeStacks"
                 Resource:
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}-Testing/*"
+                  - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}-Cognito-Testing/*"
+                  - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}-VPC-Testing/*"
         - PolicyName: ParameterStoreAccess
           PolicyDocument:
             Version: "2012-10-17"

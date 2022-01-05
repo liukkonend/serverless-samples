@@ -25,17 +25,26 @@ Parameters:
   BookingsServiceRepositoryUri:
     Type: String
     Description: URI of the ECR repository for the Bookings Service.
+  VPCID:
+    Type: String
+    Description: ID of the VPC to deploy ECS tasks in
+  VPCCIDR:
+    Type: String
+    Description: CIDR of the VPC (used for security groups)
+  PrivateSubnet1:
+    Type: String
+    Description: Private subnet used for internal resources (i.e. ECS tasks, NLB)
+  PrivateSubnet2:
+    Type: String
+    Description: Private subnet used for internal resources (i.e. ECS tasks, NLB)
+  UserPool:
+    Type: String
+    Description: ID of the Cognito User Pool
+  UserPoolAdminGroupName:
+    Type: String
+    Description: Admin group used by users to allow for broader API permissions
 
 Resources:
-  VPCStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./vpc.yaml
-
-  CognitoStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./cognito.yaml
 
   Cluster:
     Type: AWS::ECS::Cluster
@@ -129,8 +138,8 @@ Resources:
           SecurityGroups:
             - !GetAtt LocationsServiceSecurityGroup.GroupId
           Subnets:
-            - !GetAtt VPCStack.Outputs.PrivateSubnet1
-            - !GetAtt VPCStack.Outputs.PrivateSubnet2
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
       TaskDefinition: !Ref LocationsServiceTaskDefinition
     DependsOn:
       - LocationsServiceLoadBalancerTargetGroup
@@ -145,12 +154,12 @@ Resources:
           Description: Allow all outbound traffic by default
           IpProtocol: "-1"
       SecurityGroupIngress:
-        - CidrIp: !GetAtt VPCStack.Outputs.VPCCIDR
+        - CidrIp: !Ref VPCCIDR
           Description: Allow from within the VPC for port 8080
           FromPort: 8080
           IpProtocol: tcp
           ToPort: 8080
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   LocationsServiceLoadBalancerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -164,7 +173,7 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 30
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   LocationsServiceLoadBalancerHTTPListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -184,8 +193,8 @@ Resources:
           Value: "false"
       Scheme: internal
       Subnets:
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
       Type: network
 
   LocationsServiceVPCLink:
@@ -344,8 +353,8 @@ Resources:
           SecurityGroups:
             - !GetAtt ResourcesServiceSecurityGroup.GroupId
           Subnets:
-            - !GetAtt VPCStack.Outputs.PrivateSubnet1
-            - !GetAtt VPCStack.Outputs.PrivateSubnet2
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
       TaskDefinition: !Ref ResourcesServiceTaskDefinition
     DependsOn:
       - ResourcesServiceLoadBalancerTargetGroup
@@ -360,12 +369,12 @@ Resources:
           Description: Allow all outbound traffic by default
           IpProtocol: "-1"
       SecurityGroupIngress:
-        - CidrIp: !GetAtt VPCStack.Outputs.VPCCIDR
+        - CidrIp: !Ref VPCCIDR
           Description: Allow from within the VPC for port 8080
           FromPort: 8080
           IpProtocol: tcp
           ToPort: 8080
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   ResourcesServiceLoadBalancerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -379,7 +388,7 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 30
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   ResourcesServiceLoadBalancerHTTPListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -399,8 +408,8 @@ Resources:
           Value: "false"
       Scheme: internal
       Subnets:
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
       Type: network
 
   ResourcesServiceVPCLink:
@@ -562,8 +571,8 @@ Resources:
           SecurityGroups:
             - !GetAtt BookingsServiceSecurityGroup.GroupId
           Subnets:
-            - !GetAtt VPCStack.Outputs.PrivateSubnet1
-            - !GetAtt VPCStack.Outputs.PrivateSubnet2
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
       TaskDefinition: !Ref BookingsServiceTaskDefinition
     DependsOn:
       - BookingsServiceLoadBalancerTargetGroup
@@ -578,12 +587,12 @@ Resources:
           Description: Allow all outbound traffic by default
           IpProtocol: "-1"
       SecurityGroupIngress:
-        - CidrIp: !GetAtt VPCStack.Outputs.VPCCIDR
+        - CidrIp: !Ref VPCCIDR
           Description: Allow from within the VPC for port 8080
           FromPort: 8080
           IpProtocol: tcp
           ToPort: 8080
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   BookingsServiceLoadBalancerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -597,7 +606,7 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 30
-      VpcId: !GetAtt VPCStack.Outputs.VPCID
+      VpcId: !Ref VPCID
 
   BookingsServiceLoadBalancerHTTPListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -617,8 +626,8 @@ Resources:
           Value: "false"
       Scheme: internal
       Subnets:
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
       Type: network
 
   BookingsServiceVPCLink:
@@ -700,8 +709,8 @@ Resources:
       Description: Handler for Lambda authorizer
       Environment:
         Variables:
-          USER_POOL_ID: !GetAtt CognitoStack.Outputs.UserPool
-          ADMIN_GROUP_NAME: !GetAtt CognitoStack.Outputs.UserPoolAdminGroupName
+          USER_POOL_ID: !Ref UserPool
+          ADMIN_GROUP_NAME: !Ref UserPoolAdminGroupName
       Tags:
         Stack: !Sub "${AWS::StackName}"
 
@@ -1317,32 +1326,3 @@ Outputs:
   BookingsTable:
     Description: "DynamoDB Bookings table"
     Value: !Ref BookingsTable
-  
-  UserPool:
-    Description: Cognito User Pool ID
-    Value: !GetAtt CognitoStack.Outputs.UserPool
-
-  UserPoolClient:
-    Description: Cognito User Pool Application Client ID
-    Value: !GetAtt CognitoStack.Outputs.UserPoolClient
-
-  IdentityPool:
-    Description: Cognito Identity Pool ID
-    Value: !GetAtt CognitoStack.Outputs.IdentityPool
-
-  UserPoolAdminGroupName:
-    Description: User Pool group name for API administrators
-    Value: !GetAtt CognitoStack.Outputs.UserPoolAdminGroupName
-
-  CognitoIdentityPoolAuthorizedUserRole:
-    Description: IAM role for Cognito Identity Pool authorized users
-    Value: !GetAtt CognitoStack.Outputs.CognitoIdentityPoolAuthorizedUserRole
-
-  CognitoLoginURL:
-    Description: Cognito User Pool Application Client Hosted Login UI URL
-    Value: !Sub 'https://${CognitoStack.Outputs.UserPoolClient}.auth.${AWS::Region}.amazoncognito.com/login?client_id=${CognitoStack.Outputs.UserPoolClient}&response_type=code&redirect_uri=http://localhost'
-
-  CognitoAuthCommand:
-    Description: AWS CLI command for Amazon Cognito User Pool authentication
-    Value: !Sub 'aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id ${CognitoStack.Outputs.UserPoolClient} --auth-parameters USERNAME=<username>,PASSWORD=<password>'
-  

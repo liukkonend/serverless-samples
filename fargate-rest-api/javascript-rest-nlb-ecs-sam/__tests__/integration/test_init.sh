@@ -13,9 +13,10 @@ bookingsTable=$(echo "$applicationStackOutputs" | jq -r '.[] | select(.OutputKey
 echo export API_ENDPOINT="$apiEndpoint"
 
 # Getting Cognito configuration ...
-userPool=$(echo "$applicationStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPool") | .OutputValue')
-applicationClient=$(echo "$applicationStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPoolClient") | .OutputValue')
-adminGroupName=$(echo "$applicationStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPoolAdminGroupName") | .OutputValue')
+cognitoStackOutputs=$(aws cloudformation describe-stacks --stack-name $TEST_COGNITO_STACK_NAME | jq -r '.Stacks[0].Outputs')
+userPool=$(echo "$cognitoStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPool") | .OutputValue')
+applicationClient=$(echo "$cognitoStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPoolClient") | .OutputValue')
+adminGroupName=$(echo "$cognitoStackOutputs" | jq -r '.[] | select(.OutputKey == "UserPoolAdminGroupName") | .OutputValue')
 
 # Creating regular user account for testing ...
 regularUserName="regularUser@example.com"

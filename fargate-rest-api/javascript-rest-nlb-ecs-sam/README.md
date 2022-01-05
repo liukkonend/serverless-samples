@@ -16,17 +16,17 @@ This project contains source code and supporting files for a serverless applicat
 - `__tests__/testspec.yml` - A template that defines the API's test process used by the CI/CD pipeline (both unit and integration testing).
 - `template.yaml` - A template that defines the application's AWS resources.
 - `swagger.yaml` - Swagger (OpenAPI) API definition used to defined the API Gateway 
-- `vpc.yaml` - A template (nested stack) that defines the application's VPC
-- `cognito.yaml` - A template (nested stack) that defines the application's Cognito User Pool used for authentication
+- `vpc.yaml` - A template that defines the application's VPC
+- `cognito.yaml` - A template that defines the application's Cognito User Pool used for authentication
 - `pipeline.yaml` - A template that defines the application's CI/CD pipeline.
 - `buildspec.yml` - A template that defines the application's build process used by the CI/CD pipeline.
 
-The application uses shared Amazon Cognito stack for authentication/authorization and a VPC stack for ECS networking. These stacks are included as nested stacks within `template.yaml`. 
+The application uses a Amazon Cognito stack for authentication/authorization and a VPC stack for networking. These stacks are defined in their own templates and are run within the CI/CD pipeline. In many cases, infrastructure resources (such as VPC and Cognito User Pools) would be defined and deployed external to the application stack. In addition, all the services (Bookings, Locations, and Resources) are built and deployed within the same CI/CD pipeline. Similarly, in most cases, these services would each run in their own CI/CD pipeline. That being said, this project uses a single CI/CD pipeline mainly for demonstration purposes, as well as reducing complexity.
 
 ## Prerequisites
-- AWS CLI: `aws --version`
-- Node.js: `node --version` (Use 14+)
-- [jq](https://stedolan.github.io/jq/): `jq --version`
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html): `aws --version` (Use 2.x)
+- [Node.js](https://nodejs.org/en/download/): `node --version` (Use 14.x)
+- [jq](https://stedolan.github.io/jq/): jq --version
 
 ## Deploying with CI/CD pipeline
 You will use the CloudFormation CLI to deploy the stack defined within `pipeline.yaml`. This will deploy the required foundation which will allow you to make changes to your application and deploy them in a CI/CD fashion. 
@@ -47,7 +47,7 @@ git init -b main
 git pull ../serverless-samples fargate-rest-api
 ```
 
-To create the pipeline (deploying the CloudFormation stack), run the following commands:
+To create the pipeline, you will deploy it with CloudFormation. Run the following command:
 
 ```bash
 STACK_NAME=fargate-rest-api-pipeline
@@ -89,8 +89,8 @@ As part of the integration tests within the CI/CD pipeline, user accounts are cr
 - As an alternative to the AWS Console you can use AWS CLI to create and confirm user signup. Note: Make sure to replace <username> and <password> with values of your choosing.
 
 ```bash
-    USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME-Production | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPool") | .OutputValue')
-    USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME-Production | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPoolClient") | .OutputValue')
+    USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME-Cognito-Production | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPool") | .OutputValue')
+    USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME-Cognito-Production | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPoolClient") | .OutputValue')
 
     aws cognito-idp sign-up --client-id $USER_POOL_CLIENT_ID --username <username> --password <password> --user-attributes Name="name",Value="<username>"
 
@@ -147,14 +147,23 @@ npm run test:unit
 
 ## Cleanup
 
-To delete the sample application that you created, run the following commands:
+To delete the sample application that you created, use the AWS CLI:
 
 ```bash
 aws cloudformation delete-stack --stack-name $STACK_NAME-Testing
 aws cloudformation delete-stack --stack-name $STACK_NAME-Production
-
 aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-Testing
 aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-Production
+
+aws cloudformation delete-stack --stack-name $STACK_NAME-Cognito-Testing
+aws cloudformation delete-stack --stack-name $STACK_NAME-Cognito-Production
+aws cloudformation delete-stack --stack-name $STACK_NAME-VPC-Testing
+aws cloudformation delete-stack --stack-name $STACK_NAME-VPC-Production
+
+aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-Cognito-Testing
+aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-Cognito-Production
+aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-VPC-Testing
+aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME-VPC-Production
 ```
 
 Before the CI/CD pipeline stack can be deleted, you must empty the build artifact S3 bucket via the AWS Management Console. To get the name of the bucket, run the following commands:

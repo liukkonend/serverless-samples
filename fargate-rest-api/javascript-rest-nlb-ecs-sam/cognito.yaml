@@ -98,64 +98,6 @@ Resources:
       Domain: !Ref UserPoolClient
       UserPoolId: !Ref UserPool
 
-  IdentityPool:
-    Type: AWS::Cognito::IdentityPool
-    Properties:
-      IdentityPoolName: 
-        !Sub ${AWS::StackName}-IdentityPool
-      AllowUnauthenticatedIdentities: false
-      CognitoIdentityProviders: 
-        - ClientId: !Ref UserPoolClient
-          ProviderName: !GetAtt UserPool.ProviderName
-
-  CognitoUnAuthorizedRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument: 
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal: 
-              Federated: "cognito-identity.amazonaws.com"
-            Action: 
-              - "sts:AssumeRoleWithWebIdentity"
-            Condition:
-              StringEquals: 
-                "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
-              "ForAnyValue:StringLike":
-                "cognito-identity.amazonaws.com:amr": unauthenticated
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName} Cognito Identity Pool Unauthorized Role
-
-  CognitoAuthorizedRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument: 
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal: 
-              Federated: "cognito-identity.amazonaws.com"
-            Action: 
-              - "sts:AssumeRoleWithWebIdentity"
-            Condition:
-              StringEquals: 
-                "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
-              "ForAnyValue:StringLike":
-                "cognito-identity.amazonaws.com:amr": authenticated
-      Tags:
-      - Key: Name
-        Value: !Sub ${AWS::StackName} Cognito Identity Pool Unauthorized Role
-
-  IdentityPoolRoleMapping:
-    Type: "AWS::Cognito::IdentityPoolRoleAttachment"
-    Properties:
-      IdentityPoolId: !Ref IdentityPool
-      Roles:
-        authenticated: !GetAtt CognitoAuthorizedRole.Arn
-        unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
-
   ApiAdministratorsUserPoolGroup:
     Type: AWS::Cognito::UserPoolGroup
     Properties:
@@ -168,32 +110,14 @@ Outputs:
   UserPool:
     Description: Cognito User Pool ID
     Value: !Ref UserPool
-    Export: 
-      Name: !Sub ${AWS::StackName}-UserPool
 
   UserPoolClient:
     Description: Cognito User Pool Application Client ID
     Value: !Ref UserPoolClient
-    Export: 
-      Name: !Sub ${AWS::StackName}-UserPoolClient
-
-  IdentityPool:
-    Description: Cognito Identity Pool ID
-    Value: !Ref IdentityPool
-    Export: 
-      Name: !Sub ${AWS::StackName}-IdentityPool
 
   UserPoolAdminGroupName:
     Description: User Pool group name for API administrators
     Value: !Ref UserPoolAdminGroupName
-    Export: 
-      Name: !Sub ${AWS::StackName}-UserPoolAdminGroupName
-
-  CognitoIdentityPoolAuthorizedUserRole:
-    Description: IAM role for Cognito Identity Pool authorized users
-    Value: !Ref CognitoAuthorizedRole
-    Export: 
-      Name: !Sub ${AWS::StackName}-CognitoAuthorizedRole
 
   CognitoLoginURL:
     Description: Cognito User Pool Application Client Hosted Login UI URL
