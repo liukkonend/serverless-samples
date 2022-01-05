@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 
 Description: >
-  This template creates the VPC, subnets, routes used by the Fargate ECS cluster.
+  This template creates the VPC, subnets, routes used by the Fargate ECS cluster as well as Load Balancers.
 
 Resources:
   VPC:
