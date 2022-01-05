@@ -5,7 +5,7 @@ This is implementation of the backend API using AWS API Gateway REST endpoint, N
 This project contains source code and supporting files for a serverless application that you can deploy with the AWS Serverless Application Model (AWS SAM) command line interface (CLI). It includes the following files and folders:
 
 - `src/api` - Code for the application's containers
-- `src/api/authorizer.js` - Lambda function used for authorization by API Gateway
+- `src/api/authorizer` - Lambda function used for authorization by API Gateway
 - `src/api/bookings` - Application code for the Bookings Service
 - `src/api/bookings/__tests__` - Unit tests for the Bookings Service
 - `src/api/locations` - Application code for the Locations Service
