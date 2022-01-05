@@ -16,15 +16,15 @@ Globals:
     Tracing: Active
 
 Parameters:
-  LocationsServiceRepositoryUri:
+  LocationsServiceImageUri:
     Type: String
-    Description: URI of the ECR repository for the Locations Service.
-  ResourcesServiceRepositoryUri:
+    Description: URI of the container image for the Locations Service.
+  ResourcesServiceImageUri:
     Type: String
-    Description: URI of the ECR repository for the Resources Service.
-  BookingsServiceRepositoryUri:
+    Description: URI of the container image for the Resources Service.
+  BookingsServiceImageUri:
     Type: String
-    Description: URI of the ECR repository for the Bookings Service.
+    Description: URI of the container image for the Bookings Service.
   VPCID:
     Type: String
     Description: ID of the VPC to deploy ECS tasks in
@@ -59,8 +59,8 @@ Resources:
         - FARGATE
       Memory: 1GB
       Cpu: 512
-      ExecutionRoleArn: !Ref LocationsServiceExecutionRole
-      TaskRoleArn: !Ref LocationsServiceTaskRole
+      ExecutionRoleArn: !GetAtt LocationsServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt LocationsServiceTaskRole.Arn
       ContainerDefinitions:
         - Name: locations-service
           Environment:
@@ -72,7 +72,7 @@ Resources:
               Value: !Ref LocationsServiceLogGroup
             - Name: AWS_EMF_NAMESPACE
               Value: !Sub ${AWS::StackName}
-          Image: !Ref LocationsServiceRepositoryUri
+          Image: !Ref LocationsServiceImageUri
           PortMappings:
             - ContainerPort: 8080
           LogConfiguration:
@@ -142,7 +142,6 @@ Resources:
             - !Ref PrivateSubnet2
       TaskDefinition: !Ref LocationsServiceTaskDefinition
     DependsOn:
-      - LocationsServiceLoadBalancerTargetGroup
       - LocationsServiceLoadBalancerHTTPListener
 
   LocationsServiceSecurityGroup:
@@ -274,8 +273,8 @@ Resources:
         - FARGATE
       Memory: 1GB
       Cpu: 512
-      ExecutionRoleArn: !Ref ResourcesServiceExecutionRole
-      TaskRoleArn: !Ref ResourcesServiceTaskRole
+      ExecutionRoleArn: !GetAtt ResourcesServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt ResourcesServiceTaskRole.Arn
       ContainerDefinitions:
         - Name: resources-service
           Environment:
@@ -287,7 +286,7 @@ Resources:
               Value: !Ref ResourcesServiceLogGroup
             - Name: AWS_EMF_NAMESPACE
               Value: !Sub ${AWS::StackName}
-          Image: !Ref ResourcesServiceRepositoryUri
+          Image: !Ref ResourcesServiceImageUri
           PortMappings:
             - ContainerPort: 8080
           LogConfiguration:
@@ -357,7 +356,6 @@ Resources:
             - !Ref PrivateSubnet2
       TaskDefinition: !Ref ResourcesServiceTaskDefinition
     DependsOn:
-      - ResourcesServiceLoadBalancerTargetGroup
       - ResourcesServiceLoadBalancerHTTPListener
 
   ResourcesServiceSecurityGroup:
@@ -492,8 +490,8 @@ Resources:
         - FARGATE
       Memory: 1GB
       Cpu: 512
-      ExecutionRoleArn: !Ref BookingsServiceExecutionRole
-      TaskRoleArn: !Ref BookingsServiceTaskRole
+      ExecutionRoleArn: !GetAtt BookingsServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt BookingsServiceTaskRole.Arn
       ContainerDefinitions:
         - Name: bookings-service
           Environment:
@@ -505,7 +503,7 @@ Resources:
               Value: !Ref BookingsServiceLogGroup
             - Name: AWS_EMF_NAMESPACE
               Value: !Sub ${AWS::StackName}
-          Image: !Ref BookingsServiceRepositoryUri
+          Image: !Ref BookingsServiceImageUri
           PortMappings:
             - ContainerPort: 8080
           LogConfiguration:
@@ -575,7 +573,6 @@ Resources:
             - !Ref PrivateSubnet2
       TaskDefinition: !Ref BookingsServiceTaskDefinition
     DependsOn:
-      - BookingsServiceLoadBalancerTargetGroup
       - BookingsServiceLoadBalancerHTTPListener
 
   BookingsServiceSecurityGroup:
@@ -705,7 +702,8 @@ Resources:
   AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/api/authorizer.handler
+      Handler: authorizer.handler
+      CodeUri: src/api/authorizer
       Description: Handler for Lambda authorizer
       Environment:
         Variables:
@@ -770,7 +768,6 @@ Resources:
       Auth:
         ApiKeyRequired: false
         AddDefaultAuthorizerToCorsPreflight: false
-        InvokeRole: 
       MethodSettings:
         - LoggingLevel: INFO
           MetricsEnabled: true
@@ -833,6 +830,7 @@ Resources:
       KeySchema:
         - AttributeName: resourceid
           KeyType: HASH
+      BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
@@ -865,6 +863,7 @@ Resources:
       KeySchema:
         - AttributeName: bookingid
           KeyType: HASH
+      BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2

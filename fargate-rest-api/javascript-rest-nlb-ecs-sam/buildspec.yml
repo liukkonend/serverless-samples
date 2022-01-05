@@ -5,18 +5,18 @@ version: 0.2
 phases:
   install:
     commands:
-      # Install all dependencies (including dependencies for running tests)
+      # Move to the Lambda authorizer root directory
+      - cd ./src/api/authorizer
+      # Install all dependencies
       - npm ci --only=production
-  pre_build:
-    commands:
   build:
     commands:
       # Package app
+      - cd ../../../
       - aws cloudformation package --template template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template application.yaml
 artifacts:
   type: zip
-  discard-paths: yes
   files:
-    - ./application.yaml
-    - ./vpc.yaml
-    - ./cognito.yaml
+    - application.yaml
+    - vpc.yaml
+    - cognito.yaml

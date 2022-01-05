@@ -53,7 +53,7 @@ Resources:
         - Key: "Stack"
           Value: !Ref AWS::StackName
 
-  # Application build project for the CodeBuild
+  # Locations Service container image build project for the CodeBuild
   LocationsServiceCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -73,9 +73,6 @@ Resources:
             Value: !Ref AWS::AccountId
           - Name: LOCATIONS_SERVICE_ECR_REPOSITORY_URI
             Value: !GetAtt LocationsServiceRepository.RepositoryUri
-      Cache:
-        Type: S3
-        Location: !Sub ${BuildArtifactsBucket}/locations-service/codebuild-cache
       ServiceRole: !GetAtt ApplicationCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -84,6 +81,7 @@ Resources:
         - Key: "Stack"
           Value: !Ref AWS::StackName
         
+  # Resources Service container image build project for the CodeBuild
   ResourcesServiceCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -103,9 +101,6 @@ Resources:
             Value: !Ref AWS::AccountId
           - Name: RESOURCES_SERVICE_ECR_REPOSITORY_URI
             Value: !GetAtt ResourcesServiceRepository.RepositoryUri
-      Cache:
-        Type: S3
-        Location: !Sub ${BuildArtifactsBucket}/resources-service/codebuild-cache
       ServiceRole: !GetAtt ApplicationCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -114,6 +109,7 @@ Resources:
         - Key: "Stack"
           Value: !Ref AWS::StackName
 
+  # Bookings Service container image build project for the CodeBuild
   BookingsServiceCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -133,9 +129,6 @@ Resources:
             Value: !Ref AWS::AccountId
           - Name: BOOKINGS_SERVICE_ECR_REPOSITORY_URI
             Value: !GetAtt BookingsServiceRepository.RepositoryUri
-      Cache:
-        Type: S3
-        Location: !Sub ${BuildArtifactsBucket}/bookings-service/codebuild-cache
       ServiceRole: !GetAtt ApplicationCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -144,6 +137,7 @@ Resources:
         - Key: "Stack"
           Value: !Ref AWS::StackName
   
+  # Application build project for the CodeBuild
   ApplicationCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -158,9 +152,6 @@ Resources:
         EnvironmentVariables:
           - Name: BUILD_OUTPUT_BUCKET
             Value: !Ref BuildArtifactsBucket
-      Cache:
-        Type: S3
-        Location: !Sub ${BuildArtifactsBucket}/codebuild-cache
       ServiceRole: !GetAtt ApplicationCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -355,9 +346,9 @@ Resources:
                       "PrivateSubnet2": "#{VPCTestingOutputs.PrivateSubnet2}",
                       "UserPool": "#{CognitoTestingOutputs.UserPool}",
                       "UserPoolAdminGroupName": "#{CognitoTestingOutputs.UserPoolAdminGroupName}",
-                      "LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
-                      "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
-                      "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
+                      "LocationsServiceImageUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
+                      "ResourcesServiceImageUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
+                      "BookingsServiceImageUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
                   }
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
@@ -479,9 +470,9 @@ Resources:
                       "PrivateSubnet2": "#{VPCProductionOutputs.PrivateSubnet2}",
                       "UserPool": "#{CognitoProductionOutputs.UserPool}",
                       "UserPoolAdminGroupName": "#{CognitoProductionOutputs.UserPoolAdminGroupName}",
-                      "LocationsServiceRepositoryUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
-                      "ResourcesServiceRepositoryUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
-                      "BookingsServiceRepositoryUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
+                      "LocationsServiceImageUri": "${LocationsServiceRepository.RepositoryUri}:#{LocationsServiceVariables.IMAGE_TAG}", 
+                      "ResourcesServiceImageUri": "${ResourcesServiceRepository.RepositoryUri}:#{ResourcesServiceVariables.IMAGE_TAG}", 
+                      "BookingsServiceImageUri": "${BookingsServiceRepository.RepositoryUri}:#{BookingsServiceVariables.IMAGE_TAG}"
                   }
                 Capabilities: CAPABILITY_IAM
               InputArtifacts:
