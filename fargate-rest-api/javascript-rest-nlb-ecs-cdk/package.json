@@ -1,0 +1,23 @@
+{
+  "name": "javascript-rest-ecs-cdk",
+  "version": "0.1.0",
+  "bin": {
+    "javascript-rest-ecs-cdk": "bin/javascript-rest-ecs-cdk.js"
+  },
+  "scripts": {
+    "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "cdk": "cdk",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.2.0",
+    "jest": "^26.4.2"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.2.0",
+    "constructs": "^10.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.5",
+    "request": "^2.88.2"
+  }
+}
