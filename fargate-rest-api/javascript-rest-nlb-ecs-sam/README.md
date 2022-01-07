@@ -1,8 +1,8 @@
 # javascript-rest-ecs-nlb-sam
-This is implementation of the backend API using AWS API Gateway REST endpoint, Node.js and AWS SAM. 
+This is implementation of the backend API using Amazon API Gateway, Amazon Elastic Container Service (ECS), AWS Fargate, Network Load Balancer, CloudFormation, and SAM.
 
 ## Project structure
-This project contains source code and supporting files for a serverless application that you can deploy with the AWS Serverless Application Model (AWS SAM) command line interface (CLI). It includes the following files and folders:
+This project contains source code and supporting files for a serverless application that you can deploy with the CloudFormation command line interface (CLI) while using AWS Serverless Application Model (AWS SAM) transforms. It includes the following files and folders:
 
 - `src/api` - Code for the application's containers
 - `src/api/authorizer` - Lambda function used for authorization by API Gateway
@@ -21,7 +21,7 @@ This project contains source code and supporting files for a serverless applicat
 - `pipeline.yaml` - A template that defines the application's CI/CD pipeline.
 - `buildspec.yml` - A template that defines the application's build process used by the CI/CD pipeline.
 
-The application uses a Amazon Cognito stack for authentication/authorization and a VPC stack for networking. These stacks are defined in their own templates and are run within the CI/CD pipeline. In many cases, infrastructure resources (such as VPC and Cognito User Pools) would be defined and deployed external to the application stack. In addition, all the services (Bookings, Locations, and Resources) are built and deployed within the same CI/CD pipeline. Similarly, in most cases, these services would each run in their own CI/CD pipeline. That being said, this project uses a single CI/CD pipeline mainly for demonstration purposes, as well as reducing complexity.
+The application uses a Amazon Cognito stack for authentication/authorization and a VPC stack for ECS and NLB networking. These stacks are defined in their own templates and are run within the CI/CD pipeline. In many cases, infrastructure resources (such as VPC and Cognito User Pools) would be defined and deployed external to the application stack. In addition, all the services (Bookings, Locations, and Resources) are built and deployed within the same CI/CD pipeline. Similarly, in most cases, these services would each run in their own CI/CD pipeline. That being said, this project uses a single CI/CD pipeline  for demonstration purposes.
 
 ## Prerequisites
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html): `aws --version` (Use 2.x)
