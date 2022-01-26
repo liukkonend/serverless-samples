@@ -27,12 +27,12 @@ app.get('/health', (req, res) => {
     res.status(200).send('Ok');
 });
 
-app.get('/locations/:locationid/resources', logBusinessMetric, async (req, res, next) => {
+app.get('/locations/:locationID/resources', logBusinessMetric, async (req, res, next) => {
     try {
-        const { locationid } = req.params;
+        const { locationID } = req.params;
 
         // Get resources
-        const resources = await handlers.getResources(locationid);
+        const resources = await handlers.getResources(locationID);
 
         res.json(resources);
     }
@@ -41,12 +41,12 @@ app.get('/locations/:locationid/resources', logBusinessMetric, async (req, res, 
     }
 });
 
-app.get('/locations/:locationid/resources/:resourceid', logBusinessMetric, async (req, res, next) => { 
+app.get('/locations/:locationID/resources/:resourceID', logBusinessMetric, async (req, res, next) => { 
     try {
-        const { locationid, resourceid } = req.params;
+        const { locationID, resourceID } = req.params;
 
         // Get resource
-        const resource = await handlers.getResource(resourceid);
+        const resource = await handlers.getResource(resourceID);
 
         res.json(resource);
     }
@@ -55,13 +55,13 @@ app.get('/locations/:locationid/resources/:resourceid', logBusinessMetric, async
     }
 });
 
-app.put('/locations/:locationid/resources/:resourceid?', logBusinessMetric, jsonParser, async (req, res, next) => {
+app.put('/locations/:locationID/resources/:resourceID?', logBusinessMetric, jsonParser, async (req, res, next) => {
     try {
-        const { locationid, resourceid } = req.params;
+        const { locationID, resourceID } = req.params;
         const { type, description, name } = req.body;
 
         // Create resource
-        const resource = await handlers.upsertResource(resourceid, locationid, type, description, name);
+        const resource = await handlers.upsertResource(resourceID, locationID, type, description, name);
 
         res.status(201).json(resource);
     }
@@ -70,12 +70,12 @@ app.put('/locations/:locationid/resources/:resourceid?', logBusinessMetric, json
     }
 });
 
-app.delete('/locations/:locationid/resources/:resourceid', logBusinessMetric, async (req, res, next) => {
+app.delete('/locations/:locationID/resources/:resourceID', logBusinessMetric, async (req, res, next) => {
     try {
-        const { resourceid } = req.params;
+        const { resourceID } = req.params;
 
         // Delete resource
-        await handlers.deleteResource(resourceid);
+        await handlers.deleteResource(resourceID);
 
         res.status(200).send();
     }

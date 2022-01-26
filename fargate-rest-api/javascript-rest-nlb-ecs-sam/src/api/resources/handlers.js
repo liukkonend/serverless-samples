@@ -25,31 +25,31 @@ class ItemNotFoundError extends Error {
 
 exports.ItemNotFoundError = ItemNotFoundError;
 
-exports.getResources = async (locationid) => {
+exports.getResources = async (locationID) => {
     const response = await dynamo.query({
         TableName: tableName,
-        IndexName: "locationidGSI",
-        KeyConditionExpression: "locationid = :locationid",
+        IndexName: "locationIDGSI",
+        KeyConditionExpression: "locationID = :locationID",
         ExpressionAttributeValues: {
-            ':locationid': locationid
+            ':locationID': locationID
         }
     });
 
     return response.Items;
 };
 
-exports.getResource = async (resourceid) => {
-    const response = await dynamo.get({ TableName: tableName, Key: { resourceid }});
+exports.getResource = async (resourceID) => {
+    const response = await dynamo.get({ TableName: tableName, Key: { resourceID }});
     if (!response.Item) {
         throw new ItemNotFoundError('Item not found');
     }
     return response.Item;
 };
 
-exports.upsertResource = async (resourceid, locationid, type, description, name) => {
+exports.upsertResource = async (resourceID, locationID, type, description, name) => {
     const newitem = {
-        resourceid: resourceid || uuid.v1(),
-        locationid,
+        resourceID: resourceID || uuid.v1(),
+        locationID,
         timestamp: new Date().toISOString(),
         description,
         type,
@@ -61,6 +61,6 @@ exports.upsertResource = async (resourceid, locationid, type, description, name)
     return newitem;
 };
 
-exports.deleteResource = async (resourceid) => {
-    return dynamo.delete({ TableName: tableName, Key: { resourceid } });
+exports.deleteResource = async (resourceID) => {
+    return dynamo.delete({ TableName: tableName, Key: { resourceID } });
 };

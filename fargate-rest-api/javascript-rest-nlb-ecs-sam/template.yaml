@@ -811,7 +811,7 @@ Resources:
     Type: AWS::Serverless::SimpleTable
     Properties:
       PrimaryKey:
-        Name: locationid
+        Name: locationID
         Type: String
       ProvisionedThroughput:
         ReadCapacityUnits: 2
@@ -823,21 +823,21 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: resourceid
+        - AttributeName: resourceID
           AttributeType: S
-        - AttributeName: locationid
+        - AttributeName: locationID
           AttributeType: S
       KeySchema:
-        - AttributeName: resourceid
+        - AttributeName: resourceID
           KeyType: HASH
       BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
       GlobalSecondaryIndexes:
-      - IndexName: locationidGSI
+      - IndexName: locationIDGSI
         KeySchema:
-        - AttributeName: locationid
+        - AttributeName: locationID
           KeyType: HASH
         Projection:
           ProjectionType: ALL
@@ -852,25 +852,25 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: bookingid
+        - AttributeName: bookingID
           AttributeType: S
-        - AttributeName: userid
+        - AttributeName: userID
           AttributeType: S
-        - AttributeName: resourceid
+        - AttributeName: resourceID
           AttributeType: S
         - AttributeName: starttimeepochtime
           AttributeType: N
       KeySchema:
-        - AttributeName: bookingid
+        - AttributeName: bookingID
           KeyType: HASH
       BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
       GlobalSecondaryIndexes:
-      - IndexName: useridGSI
+      - IndexName: userIDGSI
         KeySchema:
-        - AttributeName: userid
+        - AttributeName: userID
           KeyType: HASH
         Projection:
           ProjectionType: ALL
@@ -879,7 +879,7 @@ Resources:
           WriteCapacityUnits: 2
       - IndexName: bookingsByUserByTimeGSI
         KeySchema:
-        - AttributeName: userid
+        - AttributeName: userID
           KeyType: HASH
         - AttributeName: starttimeepochtime
           KeyType: RANGE
@@ -890,7 +890,7 @@ Resources:
           WriteCapacityUnits: 2
       - IndexName: bookingsByResourceByTimeGSI
         KeySchema:
-        - AttributeName: resourceid
+        - AttributeName: resourceID
           KeyType: HASH
         - AttributeName: starttimeepochtime
           KeyType: RANGE

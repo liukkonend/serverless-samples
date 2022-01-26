@@ -73,7 +73,7 @@ echo export ADMIN_USER_REFRESH_TOKEN="$adminUserRefreshToken"
 # Purging data from dynamoDB tables used for testing ...
 # --- Processing $locationsTable
 result=$(aws dynamodb scan \
-  --attributes-to-get "locationid" \
+  --attributes-to-get "locationID" \
   --table-name $locationsTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \
@@ -81,7 +81,7 @@ result=$(aws dynamodb scan \
     aws dynamodb delete-item --table-name $locationsTable --key=keyItem)
 # --- Processing $resourcesTable
 result=$(aws dynamodb scan \
-  --attributes-to-get "resourceid" \
+  --attributes-to-get "resourceID" \
   --table-name $resourcesTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \
@@ -89,7 +89,7 @@ result=$(aws dynamodb scan \
     aws dynamodb delete-item --table-name $resourcesTable --key=keyItem)
 # --- Processing $bookingsTable
 result=$(aws dynamodb scan \
-  --attributes-to-get "bookingid" \
+  --attributes-to-get "bookingID" \
   --table-name $bookingsTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \

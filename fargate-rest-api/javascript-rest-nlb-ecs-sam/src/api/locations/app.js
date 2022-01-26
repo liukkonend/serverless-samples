@@ -39,12 +39,12 @@ app.get('/locations', logBusinessMetric, async (req, res, next) => {
     }
 });
 
-app.get('/locations/:locationid', logBusinessMetric, async (req, res, next) => { 
+app.get('/locations/:locationID', logBusinessMetric, async (req, res, next) => { 
     try {
-        const { locationid } = req.params;
+        const { locationID } = req.params;
 
         // Get locations
-        const location = await handlers.getLocation(locationid);
+        const location = await handlers.getLocation(locationID);
 
         res.json(location);
     }
@@ -53,13 +53,13 @@ app.get('/locations/:locationid', logBusinessMetric, async (req, res, next) => {
     }
 });
 
-app.put('/locations/:locationid?', logBusinessMetric, jsonParser, async (req, res, next) => {
+app.put('/locations/:locationID?', logBusinessMetric, jsonParser, async (req, res, next) => {
     try {
-        const { locationid } = req.params;
+        const { locationID } = req.params;
         const { imageUrl, description, name } = req.body;
 
         // Create location
-        const location = await handlers.upsertLocation(locationid, imageUrl, description, name);
+        const location = await handlers.upsertLocation(locationID, imageUrl, description, name);
 
         res.status(201).json(location);
     }
@@ -68,12 +68,12 @@ app.put('/locations/:locationid?', logBusinessMetric, jsonParser, async (req, re
     }
 });
 
-app.delete('/locations/:locationid', logBusinessMetric, async (req, res, next) => {
+app.delete('/locations/:locationID', logBusinessMetric, async (req, res, next) => {
     try {
-        const { locationid } = req.params;
+        const { locationID } = req.params;
 
         // Delete location
-        await handlers.deleteLocation(locationid);
+        await handlers.deleteLocation(locationID);
 
         res.status(200).send();
     }

@@ -25,45 +25,45 @@ class ItemNotFoundError extends Error {
 
 exports.ItemNotFoundError = ItemNotFoundError;
 
-exports.getBookingsByResource = async (resourceid) => {
+exports.getBookingsByResource = async (resourceID) => {
     const response = await dynamo.query({
         TableName: tableName,
         IndexName: "bookingsByResourceByTimeGSI",
-        KeyConditionExpression: "resourceid = :resourceid",
+        KeyConditionExpression: "resourceID = :resourceID",
         ExpressionAttributeValues: {
-          ':resourceid': resourceid
+          ':resourceID': resourceID
         }
       });
 
     return response.Items;
 };
 
-exports.getBookingsByUser = async (userid) => {
+exports.getBookingsByUser = async (userID) => {
     const response = await dynamo.query({
         TableName: tableName,
-        IndexName: "useridGSI",
-        KeyConditionExpression: "userid = :userid",
+        IndexName: "userIDGSI",
+        KeyConditionExpression: "userID = :userID",
         ExpressionAttributeValues: {
-          ':userid': userid
+          ':userID': userID
         }
       });
 
     return response.Items;
 };
 
-exports.getBooking = async (bookingid) => {
-    const response = await dynamo.get({ TableName: tableName, Key: { bookingid }});
+exports.getBooking = async (bookingID) => {
+    const response = await dynamo.get({ TableName: tableName, Key: { bookingID }});
     if (!response.Item) {
         throw new ItemNotFoundError('Item not found');
     }
     return response.Item;
 };
 
-exports.upsertBooking = async (bookingid, userid, resourceid, starttimeepochtime) => {
+exports.upsertBooking = async (bookingID, userID, resourceID, starttimeepochtime) => {
     const newitem = {
-        bookingid: bookingid || uuid.v1(),
-        userid,
-        resourceid,
+        bookingID: bookingID || uuid.v1(),
+        userID,
+        resourceID,
         starttimeepochtime,
         timestamp: new Date().toISOString()
     };
@@ -73,6 +73,6 @@ exports.upsertBooking = async (bookingid, userid, resourceid, starttimeepochtime
     return newitem;
 };
 
-exports.deleteBooking = async (bookingid) => {
-    return dynamo.delete({ TableName: tableName, Key: { bookingid } });
+exports.deleteBooking = async (bookingID) => {
+    return dynamo.delete({ TableName: tableName, Key: { bookingID } });
 };

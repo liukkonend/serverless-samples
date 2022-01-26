@@ -39,13 +39,13 @@ describe('Test locations handler', () => {
         const items =  {
             "Items": [
                 {
-                    "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                     "description": "Las Vegas",
                     "name": "The Venetian",
                     "timestamp": "2021-03-30T21:57:49.860Z"
                 },
                 {
-                    "locationid": "31a9f940-917b-11eb-9054-67837e2c40b0",
+                    "locationID": "31a9f940-917b-11eb-9054-67837e2c40b0",
                     "description": "Las Vegas",
                     "name": "Encore",
                     "timestamp": "2021-03-30T17:13:06.516Z"
@@ -65,13 +65,13 @@ describe('Test locations handler', () => {
 
         const expectedItems = [
             {
-                "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                 "description": "Las Vegas",
                 "name": "The Venetian",
                 "timestamp": "2021-03-30T21:57:49.860Z"
             },
             {
-                "locationid": "31a9f940-917b-11eb-9054-67837e2c40b0",
+                "locationID": "31a9f940-917b-11eb-9054-67837e2c40b0",
                 "description": "Las Vegas",
                 "name": "Encore",
                 "timestamp": "2021-03-30T17:13:06.516Z"
@@ -85,7 +85,7 @@ describe('Test locations handler', () => {
     it('should return single location for valid ID', async () => { 
         const item =  {
             "Item": {
-                "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                 "description": "Las Vegas",
                 "name": "The Venetian",
                 "timestamp": "2021-03-30T21:57:49.860Z"
@@ -101,7 +101,7 @@ describe('Test locations handler', () => {
         // Compare the result with the expected result
 
         const expectedItem =  {
-            "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+            "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
             "description": "Las Vegas",
             "name": "The Venetian",
             "timestamp": "2021-03-30T21:57:49.860Z"
@@ -141,7 +141,7 @@ describe('Test locations handler', () => {
         const response = await request(app).put('/locations').send(payload);
 
         const expectedItem = {
-            locationid: uuidvalue,
+            locationID: uuidvalue,
             timestamp: new Date().toISOString(),
             description: payload.description,
             imageUrl: payload.imageUrl,

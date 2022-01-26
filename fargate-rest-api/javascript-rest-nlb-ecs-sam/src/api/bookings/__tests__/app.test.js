@@ -41,9 +41,9 @@ describe('Test bookings handler', () => {
         const items = {
             "Items": [
                 {
-                    "bookingid": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
-                    "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                    "userid": "123456",
+                    "bookingID": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
+                    "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "userID": "123456",
                     "timestamp": "2021-04-01T22:46:24.068Z"
                 }
             ],
@@ -61,9 +61,9 @@ describe('Test bookings handler', () => {
 
         const expectedItems = [
             {
-                "bookingid": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
-                "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                "userid": "123456",
+                "bookingID": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
+                "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "userID": "123456",
                 "timestamp": "2021-04-01T22:46:24.068Z"
             }
         ];
@@ -76,10 +76,10 @@ describe('Test bookings handler', () => {
         const items = {
             "Items": [
                 {
-                    "bookingid": "b4c755b0-933e-11eb-bbca-998fedd8816f",
+                    "bookingID": "b4c755b0-933e-11eb-bbca-998fedd8816f",
                     "starttimeepochtime": 1617278400,
-                    "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                    "userid": "123456",
+                    "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "userID": "123456",
                     "timestamp": "2021-04-01T23:05:09.515Z"
                 }
             ],
@@ -97,10 +97,10 @@ describe('Test bookings handler', () => {
 
         const expectedItems = [
             {
-                "bookingid": "b4c755b0-933e-11eb-bbca-998fedd8816f",
+                "bookingID": "b4c755b0-933e-11eb-bbca-998fedd8816f",
                 "starttimeepochtime": 1617278400,
-                "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                "userid": "123456",
+                "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "userID": "123456",
                 "timestamp": "2021-04-01T23:05:09.515Z"
             }
         ];
@@ -112,9 +112,9 @@ describe('Test bookings handler', () => {
     it('should return single booking for valid ID', async () => { 
         const item =  {
             "Item": {
-                "bookingid": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
-                "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                "userid": "123456",
+                "bookingID": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
+                "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "userID": "123456",
                 "timestamp": "2021-04-01T22:46:24.068Z"
             }
         };
@@ -128,9 +128,9 @@ describe('Test bookings handler', () => {
         // Compare the result with the expected result
 
         const expectedItem =  {
-            "bookingid": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
-                "resourceid": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                "userid": "123456",
+            "bookingID": "15f5c040-933c-11eb-ae5f-13d2a94dc9c8",
+                "resourceID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "userID": "123456",
                 "timestamp": "2021-04-01T22:46:24.068Z"
         };
 
@@ -158,19 +158,19 @@ describe('Test bookings handler', () => {
         // Return the specified value whenever the spied function is called 
         putSpy.mockReturnValue(item); 
 
-        const userid = "123456";
+        const userID = "123456";
         const payload = {
-            resourceid: 'f8216640-91a2-11eb-8ab9-57aa454facef',
+            resourceID: 'f8216640-91a2-11eb-8ab9-57aa454facef',
             starttimeepochtime: 1617278400
         };
         
         // Invoke Express route
-        const response = await request(app).put(`/users/${userid}/bookings`).send(payload);
+        const response = await request(app).put(`/users/${userID}/bookings`).send(payload);
 
         const expectedItem = {
-            bookingid: uuidvalue,
-            userid,
-            resourceid: payload.resourceid,
+            bookingID: uuidvalue,
+            userID,
+            resourceID: payload.resourceID,
             timestamp: new Date().toISOString(),
             starttimeepochtime: payload.starttimeepochtime
         }

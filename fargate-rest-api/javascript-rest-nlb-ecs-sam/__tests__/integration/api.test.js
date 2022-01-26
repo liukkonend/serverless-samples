@@ -67,8 +67,8 @@ describe('Test API endpoint', () => {
             .send(newLocation)
             .expect(201)
         expect(response.body.name).toBe(newLocation.name);
-        expect(response.body).toHaveProperty("locationid");
-        newLocationId = response.body.locationid;
+        expect(response.body).toHaveProperty("locationID");
+        newLocationId = response.body.locationID;
     });
 
     it('allow getting location details by regular user', async () => {
@@ -77,7 +77,7 @@ describe('Test API endpoint', () => {
             .send()
             .expect(200)
         expect(response.body.name).toBe(newLocation.name);
-        expect(response.body.locationid).toBe(newLocationId);
+        expect(response.body.locationID).toBe(newLocationId);
     });
 
     it('deny access to the resources without authentication', async () => {
@@ -107,11 +107,11 @@ describe('Test API endpoint', () => {
             .send(newResource)
             .expect(201)
         expect(response.body.name).toBe(newResource.name);
-        expect(response.body).toHaveProperty("resourceid");
-        expect(response.body).toHaveProperty("locationid");
-        expect(response.body.locationid).toBe(newLocationId);
-        newResourceId = response.body.resourceid;
-        newBooking.resourceid = newResourceId;
+        expect(response.body).toHaveProperty("resourceID");
+        expect(response.body).toHaveProperty("locationID");
+        expect(response.body.locationID).toBe(newLocationId);
+        newResourceId = response.body.resourceID;
+        newBooking.resourceID = newResourceId;
     });
 
     it('allow getting resource details by regular user', async () => {
@@ -120,8 +120,8 @@ describe('Test API endpoint', () => {
             .send()
             .expect(200)
         expect(response.body.name).toBe(newResource.name);
-        expect(response.body.resourceid).toBe(newResourceId);
-        expect(response.body.locationid).toBe(newLocationId);
+        expect(response.body.resourceID).toBe(newResourceId);
+        expect(response.body.locationID).toBe(newLocationId);
     });
 
     it('deny access to the bookings without authentication', async () => {
@@ -179,11 +179,11 @@ describe('Test API endpoint', () => {
             .set('Authorization', regularUserIdToken)
             .send(newBooking)
             .expect(201)
-        expect(response.body).toHaveProperty("bookingid");
-        expect(response.body).toHaveProperty("userid");
-        expect(response.body.userid).toBe(regularUserSub);
-        expect(response.body.resourceid).toBe(newResourceId);
-        newBookingId = response.body.bookingid;
+        expect(response.body).toHaveProperty("bookingID");
+        expect(response.body).toHaveProperty("userID");
+        expect(response.body.userID).toBe(regularUserSub);
+        expect(response.body.resourceID).toBe(newResourceId);
+        newBookingId = response.body.bookingID;
     });
 
     it('return list with a single newly added booking for a resource', async () => {
@@ -207,9 +207,9 @@ describe('Test API endpoint', () => {
             .set('Authorization', regularUserIdToken)
             .send()
             .expect(200)
-        expect(response.body.bookingid).toBe(newBookingId);
-        expect(response.body.resourceid).toBe(newResourceId);
-        expect(response.body.userid).toBe(regularUserSub);
+        expect(response.body.bookingID).toBe(newBookingId);
+        expect(response.body.resourceID).toBe(newResourceId);
+        expect(response.body.userID).toBe(regularUserSub);
     });
 
     it('deny getting details for somebody else\'s booking even if you are administrator', async () => {

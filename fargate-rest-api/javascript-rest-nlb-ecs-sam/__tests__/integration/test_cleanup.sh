@@ -21,21 +21,21 @@ aws cognito-idp admin-delete-user --user-pool-id $userPool --username $ADMIN_USE
 # Purge DynamoDB tables
 # Based on https://stackoverflow.com/a/51663200
 aws dynamodb scan \
-  --attributes-to-get "locationid" \
+  --attributes-to-get "locationID" \
   --table-name $locationsTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \
   | xargs -0 -t -I keyItem \
     aws dynamodb delete-item --table-name $locationsTable --key=keyItem
 aws dynamodb scan \
-  --attributes-to-get "resourceid" \
+  --attributes-to-get "resourceID" \
   --table-name $resourcesTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \
   | xargs -0 -t -I keyItem \
     aws dynamodb delete-item --table-name $resourcesTable --key=keyItem
 aws dynamodb scan \
-  --attributes-to-get "bookingid" \
+  --attributes-to-get "bookingID" \
   --table-name $bookingsTable --query "Items[*]" \
   | jq --compact-output '.[]' \
   | tr '\n' '\0' \

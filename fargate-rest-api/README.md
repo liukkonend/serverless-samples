@@ -28,21 +28,7 @@ After authentication and authorization is complete, API Gateway forwards request
 
 ## Components created
 
-These examples create following resources in your AWS account:
- - API Gateway endpoint that serves all API requests
- - Lambda function used as a Lambda Authorizer for API Gateway
- - ECS tasks and service to process requests and business logic
- - Network Load Balancers to distribute requests to the ECS services
- - DynamoDB tables to store data 
- - IAM Roles and permissions for Lambda functions
- - API Gateway access logs stream in CloudWatch Logs
- - SNS topic for the alarms
- - API Gateway HTTP errors alarm 
- - CPU and Memory Utilization alarms for all ECS services
- - Throttling alarms for all DynamoDB tables
- - CloudWatch Dashboard with API Gateway, Lambda, ECS services, DynamoDB, and business metrics preconfigured
-
-One of the easiest ways to see all those resources listed is navigating to the AWS Console, picking the Lambda service and checking out the Applications link on the left:
+To see all those resources listed is navigating to the AWS Console, picking the Lambda service and checking out the Applications link on the left:
 
 ![AWS Lambda Console](./assets/LambdaConsole.png)
 
@@ -63,13 +49,9 @@ The dashboards are operational immediately:
 Each example includes unit and integration tests that are run automatically by the CI/CD pipeline.
 
  ## Deployment of the sample application
- Each example provides two ways to deploy resources - manual and CI/CD pipeline driven. 
- 
- If you choose to deploy components manually you will need to deploy a shared Cognito stack. Don't forget to update parameter values in templates or code accordingly if you used a shared stack name different from the one used in documentation.
+ Each example is deployed via a CI/CD pipeline. As part of the pipeline, a code repository will be created to store the application code, as well as two environments - staging and production.  Each of the environments will have all necessary resources including their own shared VPC and Cognito stacks. The build stage will automatically perform all unit tests. Staging will run integration tests before stopping for a manual production deployment approval step. 
 
- When you choose to use a CI/CD pipeline to deploy resources you will create a code repository and two environments - staging and production. Each of the environments will have all necessary resources including their own shared Cognito stacks. The build stage will automatically perform all unit tests. Staging will run integration tests before stopping for a manual production deployment approval step. 
-
- *See individual example documentation for detailed instructions on how to deploy the example manually or create CI/CD pipeline.*
+ *See individual example documentation for detailed instructions on how to create the CI/CD pipeline.*
  
  ## Examples
  Check these implementations of the example API for more details and resources to explore.

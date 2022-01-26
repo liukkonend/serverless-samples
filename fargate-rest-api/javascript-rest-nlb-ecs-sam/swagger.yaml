@@ -60,7 +60,7 @@ paths:
         passthroughBehavior: "when_no_match"
         requestParameters:
           integration.request.header.requestId: context.requestId
-  /locations/{locationid}:
+  /locations/{locationID}:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -72,7 +72,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: LocationsServiceLoadBalancer.DNSName
-              - /locations/{locationid}
+              - /locations/{locationID}
         connectionId: 
           Ref: LocationsServiceVPCLink
         connectionType: VPC_LINK
@@ -82,7 +82,7 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
+          integration.request.path.locationID: method.request.path.locationID
     put:
       consumes:
       - "application/json"
@@ -102,7 +102,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: LocationsServiceLoadBalancer.DNSName
-              - /locations/{locationid}
+              - /locations/{locationID}
         connectionId: 
           Ref: LocationsServiceVPCLink
         connectionType: VPC_LINK
@@ -112,7 +112,7 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
+          integration.request.path.locationID: method.request.path.locationID
     delete:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -124,7 +124,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: LocationsServiceLoadBalancer.DNSName
-              - /locations/{locationid}
+              - /locations/{locationID}
         connectionId: 
           Ref: LocationsServiceVPCLink
         connectionType: VPC_LINK
@@ -134,7 +134,7 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
+          integration.request.path.locationID: method.request.path.locationID
     options:
       consumes:
         - application/json
@@ -167,7 +167,7 @@ paths:
               application/json: '{}'
             statusCode: '200'
         type: mock
-  /locations/{locationid}/resources:
+  /locations/{locationID}/resources:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -179,7 +179,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: ResourcesServiceLoadBalancer.DNSName
-              - /locations/{locationid}/resources
+              - /locations/{locationID}/resources
         connectionId: 
           Ref: ResourcesServiceVPCLink
         connectionType: VPC_LINK
@@ -189,7 +189,7 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
+          integration.request.path.locationID: method.request.path.locationID
     put:
       consumes:
       - "application/json"
@@ -209,7 +209,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: ResourcesServiceLoadBalancer.DNSName
-              - /locations/{locationid}/resources
+              - /locations/{locationID}/resources
         connectionId: 
           Ref: ResourcesServiceVPCLink
         connectionType: VPC_LINK
@@ -219,8 +219,8 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
-  /locations/{locationid}/resources/{resourceid}:
+          integration.request.path.locationID: method.request.path.locationID
+  /locations/{locationID}/resources/{resourceID}:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -232,7 +232,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: ResourcesServiceLoadBalancer.DNSName
-              - /locations/{locationid}/resources/{resourceid}
+              - /locations/{locationID}/resources/{resourceID}
         connectionId: 
           Ref: ResourcesServiceVPCLink
         connectionType: VPC_LINK
@@ -242,8 +242,8 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
-          integration.request.path.resourceid: method.request.path.resourceid
+          integration.request.path.locationID: method.request.path.locationID
+          integration.request.path.resourceID: method.request.path.resourceID
     delete:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -255,7 +255,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: ResourcesServiceLoadBalancer.DNSName
-              - /locations/{locationid}/resources/{resourceid}
+              - /locations/{locationID}/resources/{resourceID}
         connectionId: 
           Ref: ResourcesServiceVPCLink
         connectionType: VPC_LINK
@@ -265,9 +265,9 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
-          integration.request.path.resourceid: method.request.path.resourceid
-  /locations/{locationid}/resources/{resourceid}/bookings:
+          integration.request.path.locationID: method.request.path.locationID
+          integration.request.path.resourceID: method.request.path.resourceID
+  /locations/{locationID}/resources/{resourceID}/bookings:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -279,7 +279,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /locations/{locationid}/resources/{resourceid}/bookings
+              - /locations/{locationID}/resources/{resourceID}/bookings
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -289,9 +289,9 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.locationid: method.request.path.locationid
-          integration.request.path.resourceid: method.request.path.resourceid
-  /users/{userid}/bookings:
+          integration.request.path.locationID: method.request.path.locationID
+          integration.request.path.resourceID: method.request.path.resourceID
+  /users/{userID}/bookings:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -303,7 +303,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /users/{userid}/bookings
+              - /users/{userID}/bookings
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -313,7 +313,7 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.userid: method.request.path.userid
+          integration.request.path.userID: method.request.path.userID
     put:
       consumes:
       - "application/json"
@@ -333,7 +333,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /users/{userid}/bookings
+              - /users/{userID}/bookings
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -343,8 +343,8 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.userid: method.request.path.userid
-  /users/{userid}/bookings/{bookingid}:
+          integration.request.path.userID: method.request.path.userID
+  /users/{userID}/bookings/{bookingID}:
     get:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -356,7 +356,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /users/{userid}/bookings/{bookingid}
+              - /users/{userID}/bookings/{bookingID}
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -366,8 +366,8 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.userid: method.request.path.userid
-          integration.request.path.bookingid: method.request.path.bookingid
+          integration.request.path.userID: method.request.path.userID
+          integration.request.path.bookingID: method.request.path.bookingID
     put:
       consumes:
       - "application/json"
@@ -387,7 +387,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /users/{userid}/bookings/{bookingid}
+              - /users/{userID}/bookings/{bookingID}
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -397,8 +397,8 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.userid: method.request.path.userid
-          integration.request.path.bookingid: method.request.path.bookingid
+          integration.request.path.userID: method.request.path.userID
+          integration.request.path.bookingID: method.request.path.bookingID
     delete:
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
@@ -410,7 +410,7 @@ paths:
             - ""
             - - http://
               - Fn::GetAtt: BookingsServiceLoadBalancer.DNSName
-              - /users/{userid}/bookings/{bookingid}
+              - /users/{userID}/bookings/{bookingID}
         connectionId: 
           Ref: BookingsServiceVPCLink
         connectionType: VPC_LINK
@@ -420,18 +420,18 @@ paths:
         requestParameters:
           integration.request.header.requestId: context.requestId
           integration.request.header.X-Amzn-Trace-Id: context.xrayTraceId
-          integration.request.path.userid: method.request.path.userid
-          integration.request.path.bookingid: method.request.path.bookingid
+          integration.request.path.userID: method.request.path.userID
+          integration.request.path.bookingID: method.request.path.bookingID
 definitions:
   BookingModel:
     type: "object"
     required:
-    - "resourceid"
+    - "resourceID"
     - "starttimeepochtime"
     properties:
-      userid:
+      userID:
         type: "string"
-      resourceid:
+      resourceID:
         type: "string"
       starttimeepochtime:
         type: "number"
@@ -440,9 +440,9 @@ definitions:
     required:
     - "name"
     properties:
-      locationid:
+      locationID:
         type: "string"
-      resourceid:
+      resourceID:
         type: "string"
       name:
         type: "string"
@@ -458,7 +458,7 @@ definitions:
     required:
     - "name"
     properties:
-      locationid:
+      locationID:
         type: "string"
       imageUrl:
         type: "string"

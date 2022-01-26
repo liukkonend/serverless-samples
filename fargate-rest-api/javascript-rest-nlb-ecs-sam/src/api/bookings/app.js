@@ -27,12 +27,12 @@ app.get('/health', (req, res) => {
     res.status(200).send('Ok');
 });
 
-app.get('/locations/:locationid/resources/:resourceid/bookings', logBusinessMetric, async (req, res, next) => {
+app.get('/locations/:locationID/resources/:resourceID/bookings', logBusinessMetric, async (req, res, next) => {
     try {
-        const { locationid, resourceid } = req.params;
+        const { locationID, resourceID } = req.params;
 
         // Get bookings
-        const bookings = await handlers.getBookingsByResource(resourceid);
+        const bookings = await handlers.getBookingsByResource(resourceID);
 
         res.json(bookings);
     }
@@ -41,12 +41,12 @@ app.get('/locations/:locationid/resources/:resourceid/bookings', logBusinessMetr
     }
 });
 
-app.get('/users/:userid/bookings', logBusinessMetric, async (req, res, next) => {
+app.get('/users/:userID/bookings', logBusinessMetric, async (req, res, next) => {
     try {
-        const { userid } = req.params;
+        const { userID } = req.params;
 
         // Get bookings
-        const bookings = await handlers.getBookingsByUser(userid);
+        const bookings = await handlers.getBookingsByUser(userID);
 
         res.json(bookings);
     }
@@ -55,12 +55,12 @@ app.get('/users/:userid/bookings', logBusinessMetric, async (req, res, next) => 
     }
 });
 
-app.get('/users/:userid/bookings/:bookingid', logBusinessMetric, async (req, res, next) => { 
+app.get('/users/:userID/bookings/:bookingID', logBusinessMetric, async (req, res, next) => { 
     try {
-        const { userid, bookingid } = req.params;
+        const { bookingID } = req.params;
 
         // Get booking
-        const resource = await handlers.getBooking(bookingid);
+        const resource = await handlers.getBooking(bookingID);
 
         res.json(resource);
     }
@@ -69,13 +69,13 @@ app.get('/users/:userid/bookings/:bookingid', logBusinessMetric, async (req, res
     }
 });
 
-app.put('/users/:userid/bookings/:bookingid?', logBusinessMetric, jsonParser, async (req, res, next) => {
+app.put('/users/:userID/bookings/:bookingID?', logBusinessMetric, jsonParser, async (req, res, next) => {
     try {
-        const { userid, bookingid } = req.params;
-        const { resourceid, starttimeepochtime} = req.body;
+        const { userID, bookingID } = req.params;
+        const { resourceID, starttimeepochtime} = req.body;
 
         // Create booking
-        const booking = await handlers.upsertBooking(bookingid, userid, resourceid, starttimeepochtime);
+        const booking = await handlers.upsertBooking(bookingID, userID, resourceID, starttimeepochtime);
 
         res.status(201).json(booking);
     }
@@ -84,12 +84,12 @@ app.put('/users/:userid/bookings/:bookingid?', logBusinessMetric, jsonParser, as
     }
 });
 
-app.delete('/users/:userid/bookings/:bookingid', logBusinessMetric, async (req, res, next) => {
+app.delete('/users/:userID/bookings/:bookingID', logBusinessMetric, async (req, res, next) => {
     try {
-        const { userid, bookingid } = req.params;
+        const { bookingID } = req.params;
 
         // Delete booking
-        await handlers.deleteBooking(bookingid);
+        await handlers.deleteBooking(bookingID);
 
         res.status(200).send();
     }

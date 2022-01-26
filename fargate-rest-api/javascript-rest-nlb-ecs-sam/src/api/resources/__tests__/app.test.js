@@ -41,18 +41,18 @@ describe('Test resources handler', () => {
         const items = {
             "Items": [
                 {
-                    "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                     "description": "Venetian Level 2",
                     "name": "Titian 2205",
-                    "resourceid": "759f8770-9309-11eb-87e3-8f538c287bfc",
+                    "resourceID": "759f8770-9309-11eb-87e3-8f538c287bfc",
                     "type": "room",
                     "timestamp": "2021-04-01T16:44:00.231Z"
                 },
                 {
-                    "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                     "description": "Venetian Level 3",
                     "name": "Toscana 3606, Room 6",
-                    "resourceid": "246396e0-9308-11eb-87e3-8f538c287bfc",
+                    "resourceID": "246396e0-9308-11eb-87e3-8f538c287bfc",
                     "type": "room",
                     "timestamp": "2021-04-01T16:34:34.446Z"
                 }
@@ -71,18 +71,18 @@ describe('Test resources handler', () => {
 
         const expectedItems = [
             {
-                "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                 "description": "Venetian Level 2",
                 "name": "Titian 2205",
-                "resourceid": "759f8770-9309-11eb-87e3-8f538c287bfc",
+                "resourceID": "759f8770-9309-11eb-87e3-8f538c287bfc",
                 "type": "room",
                 "timestamp": "2021-04-01T16:44:00.231Z"
             },
             {
-                "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                 "description": "Venetian Level 3",
                 "name": "Toscana 3606, Room 6",
-                "resourceid": "246396e0-9308-11eb-87e3-8f538c287bfc",
+                "resourceID": "246396e0-9308-11eb-87e3-8f538c287bfc",
                 "type": "room",
                 "timestamp": "2021-04-01T16:34:34.446Z"
             }
@@ -95,10 +95,10 @@ describe('Test resources handler', () => {
     it('should return single resource for valid ID', async () => { 
         const item =  {
             "Item": {
-                "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
                 "description": "Venetian Level 3",
                 "name": "Toscana 3606, Room 6",
-                "resourceid": "246396e0-9308-11eb-87e3-8f538c287bfc",
+                "resourceID": "246396e0-9308-11eb-87e3-8f538c287bfc",
                 "type": "room",
                 "timestamp": "2021-04-01T16:34:34.446Z"
             }
@@ -113,10 +113,10 @@ describe('Test resources handler', () => {
         // Compare the result with the expected result
 
         const expectedItem =  {
-            "locationid": "f8216640-91a2-11eb-8ab9-57aa454facef",
+            "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
             "description": "Venetian Level 3",
             "name": "Toscana 3606, Room 6",
-            "resourceid": "246396e0-9308-11eb-87e3-8f538c287bfc",
+            "resourceID": "246396e0-9308-11eb-87e3-8f538c287bfc",
             "type": "room",
             "timestamp": "2021-04-01T16:34:34.446Z"
         };
@@ -145,7 +145,7 @@ describe('Test resources handler', () => {
         // Return the specified value whenever the spied function is called 
         putSpy.mockReturnValue(item); 
 
-        const locationid = 'f8216640-91a2-11eb-8ab9-57aa454facef';
+        const locationID = 'f8216640-91a2-11eb-8ab9-57aa454facef';
         const payload = {
             name: 'Titian 2205',
             description: 'Venetian Level 2',
@@ -153,11 +153,11 @@ describe('Test resources handler', () => {
         };
         
         // Invoke Express route
-        const response = await request(app).put(`/locations/${locationid}/resources`).send(payload);
+        const response = await request(app).put(`/locations/${locationID}/resources`).send(payload);
 
         const expectedItem = {
-            resourceid: uuidvalue,
-            locationid,
+            resourceID: uuidvalue,
+            locationID,
             timestamp: new Date().toISOString(),
             description: payload.description,
             name: payload.name,

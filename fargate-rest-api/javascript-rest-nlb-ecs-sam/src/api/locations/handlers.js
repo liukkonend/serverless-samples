@@ -31,17 +31,17 @@ exports.getLocations = async () => {
     return response.Items;
 };
 
-exports.getLocation = async (locationid) => {
-    const response = await dynamo.get({ TableName: tableName, Key: { locationid }});
+exports.getLocation = async (locationID) => {
+    const response = await dynamo.get({ TableName: tableName, Key: { locationID }});
     if (!response.Item) {
         throw new ItemNotFoundError('Item not found');
     }
     return response.Item;
 };
 
-exports.upsertLocation = async (locationid, imageUrl, description, name) => {  
+exports.upsertLocation = async (locationID, imageUrl, description, name) => {  
     const newitem = {
-      locationid: locationid || uuid.v1(),
+      locationID: locationID || uuid.v1(),
       timestamp: new Date().toISOString(),
       description,
       imageUrl,
@@ -53,6 +53,6 @@ exports.upsertLocation = async (locationid, imageUrl, description, name) => {
     return newitem;
 };
 
-exports.deleteLocation = async (locationid) => {  
-    return dynamo.delete({ TableName: tableName, Key: { locationid } });
+exports.deleteLocation = async (locationID) => {  
+    return dynamo.delete({ TableName: tableName, Key: { locationID } });
 };
