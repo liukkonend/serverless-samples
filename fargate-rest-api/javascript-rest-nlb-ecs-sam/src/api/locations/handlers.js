@@ -29,12 +29,16 @@ exports.ItemNotFoundError = ItemNotFoundError;
 
 exports.getLocations = async (lastLocationID) => {
     const params = { Limit: PAGE_SIZE, TableName: tableName };
+    
     if (lastLocationID) {
         params.ExclusiveStartKey = {
             locationID: lastLocationID
         }
     }
 
+    // Note: Performing scans is typically not recommended for production use. 
+    // A Scan operation always scans the entire table or secondary index. Consider using filters or the Query operation instead.
+    // (See more: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-query-scan.html#bp-query-scan-performance)
     const response = await dynamo.scan(params);
 
     return { items: response.Items, lastLocationID: response.LastEvaluatedKey?.locationID };
