@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT-0
 
 // Based on https://github.com/amazon-archives/aws-serverless-auth-reference-app/blob/master/api/lambda/authorizer.js
-var jwt = require('jsonwebtoken');
-var request = require('request');
-var jwkToPem = require('jwk-to-pem');
-var PEMS = null;
+const jwt = require('jsonwebtoken');
+const request = require('request');
+const jwkToPem = require('jwk-to-pem');
+let PEMS = null;
 
 /**
  * AuthPolicy receives a set of allowed and denied methods and generates a valid
@@ -320,13 +320,13 @@ AuthPolicy.prototype = (function AuthPolicyClass() {
 function processAuthRequest(event, tokenIssuer, awsAccountId, apiOptions, callback) {
 
 
-  var token = event.authorizationToken;
+  let token = event.authorizationToken;
   if (token.startsWith("Bearer ")) {
     token = token.substring(7, token.length);
   }
 
   //Fail if the token is not jwt
-  var decodedJwt = jwt.decode(token, {complete: true});
+  let decodedJwt = jwt.decode(token, {complete: true});
   if (!decodedJwt) {
     let policy = new AuthPolicy('', awsAccountId, apiOptions);
     console.log("Not valid JWT token, returning deny all policy");
@@ -357,8 +357,8 @@ function processAuthRequest(event, tokenIssuer, awsAccountId, apiOptions, callba
   }
 
   //Get the kid from the token and retrieve corresponding PEM
-  var kid = decodedJwt.header.kid;
-  var pem = PEMS[kid];
+  let kid = decodedJwt.header.kid;
+  let pem = PEMS[kid];
   if (!pem) {
     console.log("Invalid Identity token, returning deny all policy");
     let policy = new AuthPolicy('', awsAccountId, apiOptions);
@@ -416,11 +416,11 @@ function processAuthRequest(event, tokenIssuer, awsAccountId, apiOptions, callba
 
 function toPem(keyDictionary) {
 
-  var modulus = keyDictionary.n;
-  var exponent = keyDictionary.e;
-  var key_type = keyDictionary.kty;
-  var jwk = {kty: key_type, n: modulus, e: exponent};
-  var pem = jwkToPem(jwk);
+  let modulus = keyDictionary.n;
+  let exponent = keyDictionary.e;
+  let key_type = keyDictionary.kty;
+  let jwk = {kty: key_type, n: modulus, e: exponent};
+  let pem = jwkToPem(jwk);
   return pem;
 }
 
@@ -445,9 +445,9 @@ exports.handler = (event, context, callback) => {
       function (error, response, body) {
         if (!error && response.statusCode === 200) {
           PEMS = {};
-          var keys = body['keys'];
+          let keys = body['keys'];
           for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-            var kid = keys[keyIndex].kid;
+            let kid = keys[keyIndex].kid;
             PEMS[kid] = toPem(keys[keyIndex]);
           }
           processAuthRequest(event, userPoolURI, awsAccountId, apiOptions, callback);
