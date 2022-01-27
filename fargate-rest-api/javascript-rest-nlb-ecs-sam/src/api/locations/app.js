@@ -29,8 +29,11 @@ app.get('/health', (req, res) => {
 
 app.get('/locations', logBusinessMetric, async (req, res, next) => {
     try {
+        // Provided by the previous request to support pagination
+        const { lastLocationID } = req.query;
+
         // Get locations
-        const locations = await handlers.getLocations();
+        const locations = await handlers.getLocations(lastLocationID);
 
         res.json(locations);
     }
@@ -43,7 +46,7 @@ app.get('/locations/:locationID', logBusinessMetric, async (req, res, next) => {
     try {
         const { locationID } = req.params;
 
-        // Get locations
+        // Get location
         const location = await handlers.getLocation(locationID);
 
         res.json(location);

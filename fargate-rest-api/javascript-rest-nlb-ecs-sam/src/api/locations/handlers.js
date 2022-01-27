@@ -16,6 +16,8 @@ else {
 const dynamo = DynamoDBDocument.from(ddbClient);
 const tableName = process.env.LOCATIONS_TABLE;
 
+const PAGE_SIZE = 20;
+
 class ItemNotFoundError extends Error {
     constructor(params) {
         super(params);
@@ -25,10 +27,17 @@ class ItemNotFoundError extends Error {
 
 exports.ItemNotFoundError = ItemNotFoundError;
 
-exports.getLocations = async () => {
-    const response = await dynamo.scan({ TableName: tableName });
+exports.getLocations = async (lastLocationID) => {
+    const params = { Limit: PAGE_SIZE, TableName: tableName };
+    if (lastLocationID) {
+        params.ExclusiveStartKey = {
+            locationID: lastLocationID
+        }
+    }
 
-    return response.Items;
+    const response = await dynamo.scan(params);
+
+    return { items: response.Items, lastLocationID: response.LastEvaluatedKey?.locationID };
 };
 
 exports.getLocation = async (locationID) => {

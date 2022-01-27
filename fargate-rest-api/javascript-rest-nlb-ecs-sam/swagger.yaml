@@ -12,6 +12,12 @@ schemes:
 paths:
   /locations:
     get:
+      parameters:
+      - in: "query"
+        name: "lastLocationID"
+        required: false
+        schema:
+            type: string
       responses: {}
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"
       security:

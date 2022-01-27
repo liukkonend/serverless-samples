@@ -63,20 +63,22 @@ describe('Test locations handler', () => {
  
         // Compare the result with the expected result 
 
-        const expectedItems = [
-            {
-                "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
-                "description": "Las Vegas",
-                "name": "The Venetian",
-                "timestamp": "2021-03-30T21:57:49.860Z"
-            },
-            {
-                "locationID": "31a9f940-917b-11eb-9054-67837e2c40b0",
-                "description": "Las Vegas",
-                "name": "Encore",
-                "timestamp": "2021-03-30T17:13:06.516Z"
-            }
-        ];
+        const expectedItems = {
+            items: [
+                {
+                    "locationID": "f8216640-91a2-11eb-8ab9-57aa454facef",
+                    "description": "Las Vegas",
+                    "name": "The Venetian",
+                    "timestamp": "2021-03-30T21:57:49.860Z"
+                },
+                {
+                    "locationID": "31a9f940-917b-11eb-9054-67837e2c40b0",
+                    "description": "Las Vegas",
+                    "name": "Encore",
+                    "timestamp": "2021-03-30T17:13:06.516Z"
+                }
+            ]
+        };
         expect(response.statusCode).toBe(200);
         expect(response.get('Content-Type')).toEqual("application/json; charset=utf-8");
         expect(response.body).toEqual(expectedItems); 

@@ -7,6 +7,8 @@ env:
     - IMAGE_TAG
 phases:
   install:
+    runtime-versions:
+        nodejs: 14.x
     commands:
       # Install all dependencies (including dependencies for running tests)
       - cd ./src/api/resources

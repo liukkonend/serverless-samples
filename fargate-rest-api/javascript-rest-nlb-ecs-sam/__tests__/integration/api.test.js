@@ -44,7 +44,8 @@ describe('Test API endpoint', () => {
             .set('Authorization', regularUserIdToken)
             .send()
             .expect(200)
-        expect(response.body).toEqual(expect.any(Array))
+        expect(response.body).toHaveProperty("items");
+        expect(response.body.items).toEqual(expect.any(Array))
     });
 
     it('deny adding location by regular user', async () => {
